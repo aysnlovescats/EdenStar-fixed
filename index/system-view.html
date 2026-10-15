@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ExoHabitat — Sistem Görünümü</title>
+<link rel="stylesheet" href="../css/styles.css">
+<link rel="stylesheet" href="../css/system-view.css">
+</head>
+<body>
+  <canvas id="space"></canvas>
+  <div id="labels"></div>
+
+  <header class="hud">
+    <a class="back" href="index.html">← Yıldız haritası</a>
+
+    <div class="controls">
+      <div class="heading">✦ EXOHABITAT · SİSTEM GÖRÜNÜMÜ</div>
+
+      <label for="systemSelect">YILDIZ SİSTEMİ</label>
+      <input id="systemSelect" list="systemOptions" autocomplete="off" placeholder="Yıldız sistemi ara…"><datalist id="systemOptions"></datalist>
+
+      <label for="speed">
+        ZAMAN HIZI <span id="speedText">1×</span>
+      </label>
+      <input id="speed" type="range" min="0" max="100" value="1">
+
+      <div id="dateText">Simülasyon başlatılıyor…</div>
+    </div>
+  </header>
+
+  <aside class="status-panel">
+    <h2 id="systemName">Yıldız sistemi</h2>
+    <p id="systemInfo">Gezegen bilgileri yükleniyor…</p>
+    <div id="planetList"></div>
+    <div id="planetDetails" class="details">
+      Bir gezegene tıklayarak bilgilerini görebilirsin.
+    </div>
+  </aside>
+  <aside id="colonyCard" class="colony-card" hidden>
+  <button id="closeColonyCard" class="close-card" type="button" aria-label="Kartı kapat">
+    ×
+  </button>
+
+  <div class="card-kicker">KOLONİ ÖN DEĞERLENDİRMESİ</div>
+  <h2 id="colonyPlanetName">Gezegen</h2>
+  <p class="analysis-note">Koloni senaryosunu seç. Skor ve göstergeler seçimine göre değişir.</p>
+  <div id="scenarioTabs" class="scenario-tabs" role="tablist" aria-label="Koloni senaryosu">
+    <button type="button" data-scenario="surface" role="tab">Yüzey</button>
+    <button type="button" data-scenario="underground" role="tab">Yer altı</button>
+    <button type="button" data-scenario="orbital" role="tab">Yörünge</button>
+  </div>
+  <div id="colonyChecks"></div>
+</aside>
+
+  <div class="hint">
+    Sürükle: yörüngeye bak · Tekerlek: yakınlaş · Gezegene tıkla: bilgi
+  </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="../js/planet_data.js"></script>
+<script src="../js/system-view.js"></script>
+</body>
+</html>

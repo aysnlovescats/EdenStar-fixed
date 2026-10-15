@@ -1,0 +1,220 @@
+:root {
+  --panel: rgba(3, 10, 20, .92);
+  --border: rgba(90, 157, 205, .3);
+  --blue: #75c7ff;
+  --gold: #ffb62e;
+  --text: #d8e8f3;
+  --muted: #8296a5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #00040a;
+  color: var(--text);
+  font-family: Consolas, "Courier New", monospace;
+}
+
+#space,
+#labels {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#space {
+  display: block;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#labels {
+  pointer-events: none;
+}
+
+
+
+.planet-label {
+  position: absolute;
+  color: #b7d9ee;
+  font-size: 12px;
+  white-space: nowrap;
+  text-shadow: 0 0 5px #000, 0 0 8px #000;
+  transform: translate(8px, -50%);
+}
+
+.hud {
+  position: fixed;
+  z-index: 2;
+  inset: 14px auto auto 14px;
+  width: min(310px, calc(100vw - 28px));
+}
+
+.back,
+.controls,
+.status-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 8px 30px #0008;
+}
+
+.back {
+  display: inline-block;
+  padding: 9px 12px;
+  margin-bottom: 8px;
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.controls {
+  padding: 15px;
+}
+
+.heading {
+  margin-bottom: 18px;
+  color: var(--blue);
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: .13em;
+}
+
+.controls label {
+  display: block;
+  margin: 14px 0 7px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .12em;
+}
+
+#speedText {
+  color: var(--gold);
+}
+
+select,
+#systemSelect {
+  width: 100%;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  outline: none;
+  background: #06111e;
+  color: var(--blue);
+  font: inherit;
+  font-size: 12px;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--gold);
+}
+
+#dateText {
+  margin-top: 10px;
+  color: var(--blue);
+  font-size: 11px;
+}
+
+.status-panel {
+  position: fixed;
+  z-index: 2;
+  top: 50%;
+  right: 14px;
+  width: min(320px, calc(100vw - 28px));
+  max-height: 70vh;
+  padding: 16px;
+  overflow: auto;
+  transform: translateY(-50%);
+}
+
+.status-panel h2 {
+  margin: 0 0 5px;
+  color: var(--gold);
+  font-size: 17px;
+  letter-spacing: .08em;
+}
+
+#systemInfo {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.planet-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 2px;
+  border: 0;
+  border-bottom: 1px solid rgba(90, 157, 205, .13);
+  background: transparent;
+  color: var(--blue);
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.planet-row:hover,
+.planet-row.selected {
+  color: var(--gold);
+}
+
+.planet-row span:last-child {
+  color: var(--muted);
+  text-align: right;
+}
+
+.details {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.hint {
+  position: fixed;
+  right: 14px;
+  bottom: 13px;
+  left: 14px;
+  color: #7790a1;
+  font-size: 10px;
+  letter-spacing: .09em;
+  text-align: center;
+  pointer-events: none;
+}
+
+@media(max-width:700px){.hud{top:8px;left:8px;width:min(270px,calc(100vw - 16px))}.controls{padding:10px}.heading{margin-bottom:8px;font-size:12px}.status-panel{top:auto;right:8px;bottom:30px;width:min(270px,calc(100vw - 16px));max-height:38vh;padding:11px;transform:none}.status-panel h2{font-size:14px}.planet-row{padding:6px 2px;font-size:11px}}
+.colony-card{position:fixed;z-index:3;top:50%;right:350px;width:min(320px,calc(100vw - 28px));max-height:70vh;padding:20px;overflow:auto;transform:translateY(-50%);border:1px solid var(--border);border-radius:12px;background:var(--panel);box-shadow:0 8px 30px #0008}.colony-card[hidden]{display:none}.close-card{float:right;border:0;background:transparent;color:var(--muted);font-size:24px;cursor:pointer}.card-kicker{margin:4px 28px 12px 0;color:var(--gold);font-size:10px;letter-spacing:.12em}.colony-card h2{margin:0 0 10px;color:var(--blue)}.analysis-note,.missing-data{color:var(--muted);font-size:11px;line-height:1.6}.analysis-check{padding:10px 0;border-bottom:1px solid rgba(90,157,205,.18)}.analysis-check strong,.analysis-check span{display:block}.analysis-check strong{margin-bottom:4px;color:var(--text);font-size:12px}.analysis-check span{color:var(--muted);font-size:11px}.missing-data{display:grid;gap:5px;margin-top:14px;padding:12px;border:1px solid rgba(255,182,46,.25);border-radius:8px}.missing-data strong{color:var(--gold)}
+@media(max-width:700px){.colony-card{top:auto;right:8px;bottom:40vh;width:min(270px,calc(100vw - 16px));max-height:35vh;padding:12px;transform:none}}
+
+  /* Koloni senaryosu seçimi ve seçili senaryonun göstergeleri */
+.scenario-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+.scenario-tabs button{padding:9px 5px;border:1px solid rgba(90,157,205,.28);border-radius:7px;background:rgba(7,17,29,.8);color:var(--muted);font:inherit;font-size:11px;cursor:pointer}
+.scenario-tabs button:hover,.scenario-tabs button.active{border-color:var(--gold);color:var(--gold);background:rgba(255,182,46,.08)}
+.scenario-description{margin:8px 0;color:var(--muted);font-size:11px;line-height:1.5}
+.scenario-result{margin:12px 0;padding:12px;border:1px solid rgba(90,157,205,.24);border-radius:9px;background:rgba(7,17,29,.78)}
+.scenario-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.scenario-heading h3{margin:0;color:var(--blue);font-size:13px}
+.scenario-heading strong{color:var(--gold);font-size:17px;white-space:nowrap}
+.scenario-meta{margin:6px 0 9px;color:var(--muted);font-size:10px}
+.scenario-criterion{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(90,157,205,.12);font-size:10px}
+.scenario-criterion span{color:var(--muted)}
+.scenario-criterion small{color:#637d8e}
+.scenario-criterion b{color:var(--text);white-space:nowrap}
+.analysis-note{font-size:10px;line-height:1.55}
+#colonyCard:not([hidden]){width:min(430px,calc(100vw - 28px));right:350px;max-height:82vh}
+@media(max-width:700px){#colonyCard:not([hidden]){right:8px;left:8px;width:auto;bottom:40vh;max-height:38vh}}

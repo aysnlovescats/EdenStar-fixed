@@ -1,0 +1,14 @@
+Claude incelemesindeki düzeltmeler
+
+- Boş NASA hücreleri artık 0 sayılmıyor; eksik sıcaklık -273,15 °C, eksik kütle de 0 yerçekimi olarak gösterilmez.
+- Tarayıcı önbellek anahtarı v2 oldu.
+- Yıldız haritası, sistem görünümü, Python API'si ve CSV raporu aynı 30/40/30 ön eleme ölçütlerini kullanıyor. Veri kapsamı %60'ın altındaysa skor null ve arayüzde puan gösterilmiyor.
+- NASA ışınımı yoksa yıldız parlaklığı ve uzaklıkla hesaplama deneniyor; denge sıcaklığı eksikse varsayımlı tahmin açıkça işaretleniyor.
+- Harita konumu eksik yıldızlar (0,0,0)'a yerleştirilmiyor. Sık etiketleri azaltmak için yalnızca seçilmiş sistem adlandırılıyor; haritadaki diğer yıldız noktaları duruyor.
+- Harita sayfası system-view.css yüklemiyor. Sistem CSS'indeki medya sorgusu/parantez hatası düzeltildi.
+- Ölçülmüş yörünge dönemi varsa kullanılıyor. AU yoksa sadece çizimde temsilî konum veriliyor; bilgi kartında gerçek değer diye sunulmuyor.
+- Sistem seçicisi yazıp aramaya uygun hale geldi.
+- Flask yalnızca index, css, js ve data içeriğini sunuyor; debug modu varsayılan olarak kapalı.
+- main.js korunmuştur: harita ve sistem sayfasına geçiş bu dosyayı kullanır; silinmesi sistemi bozar.
+
+Not: Güneş Sistemi için yüzey sıcaklığı, ötegezegenler için NASA denge sıcaklığı kullanılıyor; doğrudan aynı ölçüm değiller. Puan, proje içi ön eleme göstergesidir ve kesin koloni uygunluğu değildir.

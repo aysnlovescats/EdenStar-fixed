@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ExoHabitat – Yıldız Haritası</title>
+<link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+<div id="labels"></div>
+<div id="top">
+  <button id="back">← Yıldız haritası</button>
+  <span id="scopes">
+    <button class="sc" data-r="50" aria-pressed="true">Yakın çevre (50 ly)</button>
+    <button class="sc" data-r="200" aria-pressed="false">200 ly</button>
+    <button class="hm" id="home">☉ Güneş sistemi</button>
+    <button class="sc" data-r="1000" aria-pressed="false">1000 ly</button>
+    <button class="sc" data-r="99999" aria-pressed="false">Tüm harita</button>
+  </span>
+  <span id="ttl"></span>
+</div>
+<div id="tip"></div>
+<div id="hint"></div>
+<aside id="panel" aria-live="polite">
+  <button id="x" aria-label="Kapat">×</button>
+  <div id="pc"></div>
+</aside>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="../js/planet_data.js"></script>
+<script src="../js/main.js"></script>
+</body>
+</html>
