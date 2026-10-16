@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ExoHabitat – Yıldız Haritası</title>
-<link rel="stylesheet" href="../css/styles.css">
+<link rel="stylesheet" href="../css/styles.css?v=compass-4">
 </head>
 <body>
 <div id="labels"></div>
@@ -18,8 +18,27 @@
     <button class="sc" data-r="99999" aria-pressed="false">Tüm harita</button>
   </span>
   <span id="ttl"></span>
+  <a id="workspaceHome" href="workspace.html">✦ Analiz merkezi</a>
 </div>
 <div id="tip"></div>
+<aside id="compass" aria-label="Yıldız haritası yön göstergesi">
+  <span class="compass-title">HARİTA YÖNLERİ</span>
+  <svg viewBox="0 0 120 120" role="img" aria-label="Kuzey, güney, doğu ve batı yönleri">
+    <defs>
+      <marker id="compassArrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#ffc35b"></path></marker>
+      <marker id="compassArrowBlue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#76c8e8"></path></marker>
+    </defs>
+    <circle class="compass-ring" cx="60" cy="60" r="48"></circle>
+    <line id="compass-north-line" class="compass-line north" x1="60" y1="60" x2="60" y2="25"></line>
+    <line id="compass-east-line" class="compass-line east" x1="60" y1="60" x2="95" y2="60"></line>
+    <circle class="compass-center" cx="60" cy="60" r="3"></circle>
+    <text id="compass-north" class="compass-label north-label" x="60" y="16">N</text>
+    <text id="compass-south" class="compass-label" x="60" y="111">S</text>
+    <text id="compass-east" class="compass-label east-label" x="108" y="64">E</text>
+    <text id="compass-west" class="compass-label" x="12" y="64">W</text>
+  </svg>
+  <small>N: gök kuzeyi · E: artan RA</small>
+</aside>
 <div id="hint"></div>
 <aside id="panel" aria-live="polite">
   <button id="x" aria-label="Kapat">×</button>
@@ -27,7 +46,7 @@
 </aside>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="../js/planet_data.js"></script>
-<script src="../js/main.js"></script>
+<script src="../js/planet_data.js?v=planet-data-4"></script>
+<script src="../js/main.js?v=compass-4"></script>
 </body>
 </html>

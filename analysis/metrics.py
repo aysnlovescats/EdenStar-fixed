@@ -35,13 +35,37 @@ def derive_planet_metrics(row):
         temperature = 278.5 * flux ** .25
         temp_estimated = True
     sy_dist = number(row.get("sy_dist"))
+    gravity = mass / radius ** 2 if mass and radius and radius > 0 else None
+    access = sy_dist * 3.26156 if sy_dist is not None else None
+    provenance = {
+        "radius": {"kind": "archive", "label": "NASA arşiv değeri"} if radius is not None else None,
+        "gravity": {"kind": "derived", "label": "NASA arşivindeki kütle ve yarıçaptan türetildi"} if gravity is not None else None,
+        "insolation": (
+            {"kind": "estimated", "label": "Yıldız parlaklığı ve yörüngeden tahmin edildi"}
+            if flux_estimated else {"kind": "archive", "label": "NASA arşivindeki yıldız enerjisi değeri"}
+            if flux is not None else None
+        ),
+        "temperature": (
+            {"kind": "estimated", "label": "Yıldız enerjisinden yaklaşık hesaplandı"}
+            if temp_estimated else {"kind": "archive", "label": "NASA arşivindeki denge sıcaklığı değeri"}
+            if temperature is not None else None
+        ),
+        "access": {"kind": "derived", "label": "NASA sistem uzaklığı parsec'ten ışık yılına çevrildi"} if access is not None else None,
+    }
     metrics = {
         "radius": radius,
-        "gravity": mass / radius ** 2 if mass and radius and radius > 0 else None,
+        "mass": mass,
+        "gravity": gravity,
         "density": mass / radius ** 3 if mass and radius and radius > 0 else None,
         "insolation": flux, "temperature": temperature,
-        "access": sy_dist,
+        "temperature_kind": "equilibrium",
+        # NASA's sy_dist is parsecs; the scoring/UI indicator is in light-years.
+        "access": access,
+        "surface_pressure_bar": None,
+        "atmosphere_status": None,
+        "atmosphere_summary": None,
         # Not in this dataset with reliable, comparable measurements.
         "radiation": None, "water": None, "geothermal": None, "geology": None,
+        "provenance": provenance,
     }
     return metrics, flux_estimated, temp_estimated

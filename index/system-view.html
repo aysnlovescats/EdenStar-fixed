@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ExoHabitat — Sistem Görünümü</title>
 <link rel="stylesheet" href="../css/styles.css">
-<link rel="stylesheet" href="../css/system-view.css">
+<link rel="stylesheet" href="../css/system-view.css?v=phl-detail-2">
 </head>
 <body>
   <canvas id="space"></canvas>
@@ -13,6 +13,7 @@
 
   <header class="hud">
     <a class="back" href="index.html">← Yıldız haritası</a>
+    <a class="back workspace-back" href="workspace.html">✦ Analiz merkezi</a>
 
     <div class="controls">
       <div class="heading">✦ EXOHABITAT · SİSTEM GÖRÜNÜMÜ</div>
@@ -38,19 +39,65 @@
     </div>
   </aside>
   <aside id="colonyCard" class="colony-card" hidden>
-  <button id="closeColonyCard" class="close-card" type="button" aria-label="Kartı kapat">
-    ×
-  </button>
-
-  <div class="card-kicker">KOLONİ ÖN DEĞERLENDİRMESİ</div>
-  <h2 id="colonyPlanetName">Gezegen</h2>
-  <p class="analysis-note">Koloni senaryosunu seç. Skor ve göstergeler seçimine göre değişir.</p>
-  <div id="scenarioTabs" class="scenario-tabs" role="tablist" aria-label="Koloni senaryosu">
-    <button type="button" data-scenario="surface" role="tab">Yüzey</button>
-    <button type="button" data-scenario="underground" role="tab">Yer altı</button>
-    <button type="button" data-scenario="orbital" role="tab">Yörünge</button>
-  </div>
-  <div id="colonyChecks"></div>
+    <div class="mission-frame">
+      <header class="mission-topline">
+        <div class="mission-brand"><span class="mission-symbol">✦</span><span>EXOHABITAT <small>MISSION DESIGN</small></span></div>
+        <div class="mission-status"><i></i> ÖN DEĞERLENDİRME · SİMÜLASYON</div>
+        <button id="closeColonyCard" class="close-card" type="button" aria-label="Kartı kapat">×</button>
+      </header>
+      <div class="mission-workspace">
+        <aside class="mission-rail">
+          <div id="planetVisual" class="planet-feature" data-body="default">
+            <span id="planetVisualLabel" class="feature-label">HEDEF GÖKCİSMİ</span>
+            <div class="planet-art"></div>
+            <img id="planetPhoto" class="planet-photo" alt="" hidden>
+            <div class="feature-caption"><small>ANALİZ HEDEFİ</small><h2 id="colonyPlanetName">Gezegen</h2></div>
+          </div>
+          <a id="planetImageCredit" class="planet-image-credit" target="_blank" rel="noopener noreferrer" hidden></a>
+          <p id="planetClassInfo" class="planet-class-info"></p>
+          <p id="planetAccessInfo" class="planet-access-info"></p>
+          <div class="rail-divider"></div>
+          <div class="rail-section-title"><span>01</span><strong>YERLEŞİM SENARYOSU</strong></div>
+          <p class="rail-copy">Değerlendirmek istediğin yaşam ortamını seç.</p>
+          <div id="scenarioTabs" class="scenario-tabs" role="tablist" aria-label="Yerleşim senaryosu">
+            <button type="button" data-scenario="surface" role="tab">Yüzey</button>
+            <button type="button" data-scenario="underground" role="tab">Yer altı</button>
+            <button type="button" data-scenario="orbital" role="tab">Yörünge</button>
+          </div>
+          <button id="toggleComparison" class="comparison-open" type="button">Gezegenleri karşılaştır</button>
+          <div class="rail-footnote"><span class="status-dot"></span> Sonuçlar mevcut veriler ve senaryo varsayımlarına dayanır.</div>
+        </aside>
+        <main class="mission-content">
+          <section id="comparisonPanel" hidden>
+            <div class="content-heading"><div><span class="eyebrow">KARŞILAŞTIRMA</span><h3>Aynı senaryoda karşılaştır</h3></div><span class="section-index">EN FAZLA 3 GÖKCİSMİ</span></div>
+            <p class="analysis-note">Aynı yıldız sisteminden en fazla üç gökcismi seç. Skorları veri kapsamı ve ölçüt durumlarıyla birlikte karşılaştır.</p>
+            <div id="comparisonPlanetChoices" class="comparison-planet-choices"></div>
+            <div class="comparison-controls">
+              <label for="comparisonScenario">Senaryo</label>
+              <select id="comparisonScenario">
+                <option value="surface">Yüzey · kubbe</option>
+                <option value="underground">Yer altı sığınağı</option>
+                <option value="orbital">Yörünge habitatı</option>
+              </select>
+              <button id="runComparison" type="button">Karşılaştır</button>
+            </div>
+            <div id="comparisonResults" aria-live="polite"></div>
+          </section>
+          <section id="surfaceModes" hidden>
+            <div class="content-heading"><div><span class="eyebrow">YÜZEY YERLEŞİMİ</span><h3>Yaklaşım seçin</h3></div><span class="section-index">02 / 03</span></div>
+            <p class="analysis-note">Yüzey koşullarına uygun yerleşim yaklaşımını seç. Veri olmayan seçeneklerde puan uydurulmaz.</p>
+            <div id="surfaceModeChoices" class="scenario-choices"></div>
+          </section>
+          <section id="surfaceModeDetail" hidden>
+            <button id="surfaceModesBack" class="scenario-back" type="button">← Yüzey seçeneklerine dön</button>
+            <div id="surfaceModeContent"></div>
+          </section>
+          <div id="colonyChecks"></div>
+          <div id="planetPhlComparison" aria-live="polite"></div>
+        </main>
+      </div>
+      <footer class="mission-footer"><span>EXOHABITAT · PLANETARY HABITAT SCREENING</span><span>VERİ KAPSAMI PUANLA BİRLİKTE DEĞERLENDİRİLİR</span></footer>
+    </div>
 </aside>
 
   <div class="hint">
@@ -58,7 +105,7 @@
   </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="../js/planet_data.js"></script>
-<script src="../js/system-view.js"></script>
+<script src="../js/planet_data.js?v=planet-data-4"></script>
+<script src="../js/system-view.js?v=phl-detail-2"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // NASA verisi data.js dosyasından SYSARR olarak yüklenir.
 window.loadPlanetSystems()
-  .then(SYSARR => {
+  .then(async SYSARR => {
     const SYS = SYSARR.map(r => ({
       h: r[0],
       ra: r[1],
@@ -18,6 +18,7 @@ window.loadPlanetSystems()
         a: q[4],
         periodDays: q[6],
         insolation: q[7],
+        contested: !!q[8],
         k: "Ötegezegen",
         e: {
           R: !!(q[5] & 1),
@@ -27,6 +28,19 @@ window.loadPlanetSystems()
       }))
     }));
 
+    const mapScoreMap = new Map();
+    try {
+      const response = await fetch("/api/map-scores");
+      if (response.ok) {
+        const payload = await response.json();
+        (payload.results || []).forEach(item => {
+          mapScoreMap.set(`${item.host.toLocaleLowerCase("tr-TR")}|||${item.planet.toLocaleLowerCase("tr-TR")}`, item);
+        });
+      }
+    } catch (error) {
+      console.warn("Harita skorları Python API'sinden alınamadı.", error);
+    }
+
     // main.js dosyasındaki diğer kodlar burada devam edecek.
 
 const SOLAR = {
@@ -35,10 +49,10 @@ const SOLAR = {
   teff: 5772,
   rad: 1,
   p: [
-    { n: 'Merkür', k: 'Gezegen', T: 167, g: 3.7, R: 2440, a: .387 },
-    { n: 'Venüs', k: 'Gezegen', T: 464, g: 8.87, R: 6052, a: .723 },
-    { n: 'Dünya', k: 'Gezegen (referans)', T: 15, g: 9.81, R: 6371, a: 1 },
-    { n: 'Mars', k: 'Gezegen', T: -63, g: 3.71, R: 3390, a: 1.524 },
+    { n: 'Merkür', k: 'Gezegen', T: 167, g: 3.7, R: 2440, a: .387, pressureBar: 0, atmosphereStatus: 'hostile', atmosphereSummary: 'İhmal edilebilir ekzosfer; solunabilir atmosfer yok' },
+    { n: 'Venüs', k: 'Gezegen', T: 464, g: 8.87, R: 6052, a: .723, pressureBar: 92, atmosphereStatus: 'hostile', atmosphereSummary: 'CO₂ ağırlıklı, aşındırıcı atmosfer' },
+    { n: 'Dünya', k: 'Gezegen (referans)', T: 15, g: 9.81, R: 6371, a: 1, pressureBar: 1, atmosphereStatus: 'breathable', atmosphereSummary: 'N₂/O₂ ağırlıklı, solunabilir atmosfer' },
+    { n: 'Mars', k: 'Gezegen', T: -63, g: 3.71, R: 3390, a: 1.524, pressureBar: .006, atmosphereStatus: 'hostile', atmosphereSummary: 'Çok ince, CO₂ ağırlıklı atmosfer' },
     { n: 'Jüpiter', ctx: 1, R: 69911, a: 5.2 },
     { n: 'Satürn', ctx: 1, R: 58232, a: 9.58 },
     { n: 'Ay', k: 'Uydu (Dünya)', par: 'Dünya', T: -23, g: 1.62, R: 1737 },
@@ -47,80 +61,36 @@ const SOLAR = {
     { n: 'Enceladus', k: 'Uydu (Satürn)', par: 'Satürn', T: -198, g: .11, R: 252 }
   ]
 };
-function calc(b, system = null) {
-  const radius = b.R != null && b.R > 0 ? b.R / 6371 : null;
-  let flux = b.insolation != null && b.insolation > 0 ? b.insolation : null;
-  
-  if (flux == null && b.a != null && b.a > 0) {
-    const luminosity = system && system.lum != null
-      ? Math.pow(10, system.lum)
-      : system && system.rad > 0 && system.teff > 0
-        ? system.rad ** 2 * (system.teff / 5772) ** 4
-        : 1;
-    flux = luminosity / (b.a ** 2);
-  }
-  
-  let temperature = b.T == null ? null : b.T + 273.15;
-  b.fluxEstimated = b.insolation == null && flux != null;
-  b.tempEstimated = temperature == null && flux != null && flux > 0;
-  if (b.tempEstimated) temperature = 278.5 * Math.pow(flux, .25);
-
-  // 1. FİZİKSEL VETO: Gaz Devi Kontrolü
-  const isGasGiant = radius != null && radius >= 2.5;
-
-  const checks = [
-    ['Yarıçap', radius, 30, .5, 1.6, .3, 2.5],
-    ['Yıldıza gelen ışınım', flux, 40, .25, 1.5, .1, 2],
-    ['Denge sıcaklığı', temperature, 30, 200, 320, 170, 350]
+function applyPythonScore(body, host) {
+  const record = mapScoreMap.get(`${host.toLocaleLowerCase("tr-TR")}|||${body.n.toLocaleLowerCase("tr-TR")}`);
+  const indicators = record?.indicators || [];
+  body.score = record?.score ?? null;
+  body.scoreMax = record?.score_max ?? null;
+  body.coverage = record?.coverage ?? 0;
+  body.contested = !!record?.contested;
+  body.planetClass = record?.planet_class?.label || "Sınıflandırılamadı";
+  body.fluxEstimated = !!record?.flux_estimated;
+  body.tempEstimated = !!record?.temp_estimated;
+  body.surfaceConcern = (record?.critical_checks || []).some(check => check.status === "risk");
+  body.pressureBar = record?.metrics?.surface_pressure_bar ?? body.pressureBar ?? null;
+  body.atmosphereSummary = record?.metrics?.atmosphere_summary || body.atmosphereSummary || null;
+  body.parts = indicators.length ? indicators.map(item => {
+    const score = item.score == null ? null : item.score / 100;
+    const shown = item.value == null ? "veri yok"
+      : `${Number(item.value).toLocaleString("tr-TR", { maximumFractionDigits: 2 })} ${item.unit || ""}`.trim();
+    return [item.name, score, shown, item.weight];
+  }) : [
+    ["Yarıçap", null, "veri yok", 0], ["Yıldıza gelen ışınım", null, "veri yok", 0],
+    ["Yüzey / denge sıcaklığı", null, "veri yok", 0], ["Yerçekimi", null, "veri yok", 0],
+    ["Dış basınç", null, "veri yok", 0], ["Atmosfer yönetimi", null, "veri yok", 0],
   ];
-  
-  let points = 0, available = 0;
-  b.parts = checks.map(([name, value, weight, lo, hi, broadLo, broadHi]) => {
-    let fraction = null;
-    if (value != null) {
-      available += weight;
-      fraction = value >= lo && value <= hi ? 1 : value >= broadLo && value <= broadHi ? .5 : 0;
-      points += fraction * weight;
-    }
-    const shown = value == null ? 'veri yok' : name === 'Yarıçap'
-      ? value.toFixed(2) + ' Dünya yarıçapı'
-      : name === 'Yıldıza gelen ışınım' ? value.toFixed(2) + ' Dünya ışınımı'
-      : value.toFixed(1) + ' K';
-    return [name, fraction, shown];
-  });
-
-  // 2. CEZA SİSTEMİ: Güvenilirlik Çarpanı (Confidence Damping)
-  if (isGasGiant) {
-    b.score = null; // Gaz devlerine haritada ön eleme puanı yok
-  } else if (available < 60) {
-    b.score = null; // En az %60 veri yoksa elenir
-  } else {
-    // Ham oran (Puan / Bilinen Ağırlık)
-    const rawNormalized = points / available; 
-    
-    // Veri kapsama oranı (Bilinen Ağırlık / 100)
-    const confidence = available / 100;
-    
-    // Güvenilirlik Çarpanı (Eksik verisi olan gezegenin puanını sönümler)
-    const confidenceMultiplier = 0.65 + 0.35 * confidence;
-    
-    // Tahmin Cezası (Eğer sıcaklık kütleden/ışınımdan tahmin edildiyse ufak bir kırpma)
-    let estCount = 0;
-    if (b.tempEstimated) estCount++;
-    const estPenalty = 1.0 - (0.04 * estCount);
-    
-    // Nihai katı skor
-    b.score = Math.round(rawNormalized * confidenceMultiplier * estPenalty * 100);
-  }
 }
 
 SYS.forEach(s => s.p.forEach(b => {
-  b.k = 'Ötegezegen';
-  calc(b, s);
+  b.k = "Ötegezegen";
+  applyPythonScore(b, s.h);
 }));
-SOLAR.p.forEach(b => {
-  if (!b.ctx) calc(b);
-});
+SOLAR.p.forEach(b => applyPythonScore(b, SOLAR.h));
 
 const ALL = [SOLAR, ...SYS];
 ALL.forEach(s => {
@@ -407,7 +377,7 @@ const pcol = b => new THREE.Color(
 function planetLab(b) {
   const e = mkLab(b.n);
   if (!b.ctx && b.score != null) {
-    e.innerHTML = b.n + ' <span style="color:' + css(b.score) + '">' + b.score + '</span>';
+    e.innerHTML = escapeMarkup(b.n) + ' <span style="color:' + css(b.score) + '">' + b.score + '</span>';
   }
   return e;
 }
@@ -421,6 +391,20 @@ function enterSystem(s, pl) {
   }
 
   window.location.href = url.href;
+}
+
+function simulatorUrl(host, planet) {
+  const url = new URL("workspace.html", window.location.href);
+  url.searchParams.set("host", host);
+  url.searchParams.set("planet", planet);
+  url.hash = "life-support";
+  return url.href.replace(/&/g, "&amp;");
+}
+
+function escapeMarkup(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  })[character]);
 }
 
 function enterMap() {
@@ -464,11 +448,13 @@ function showNode(s) {
     (s.best == null ? '' :
       '<div class="sub">En yüksek ön eleme puanı: <b style="color:' +
       css(s.best) + '">' + s.best + '</b></div>') +
-    s.p.filter(b => !b.ctx && !b.par).map(b =>
-      '<button class="pl" data-p="' + b.n.replace(/"/g, '') + '">' +
-      '<span>' + b.n + '</span><b style="color:' +
+    s.p.filter(b => s === SOLAR || (!b.ctx && !b.par)).map(b =>
+      '<div class="planet-map-row"><button class="pl" data-p="' + escapeMarkup(b.n) + '">' +
+      '<span>' + escapeMarkup(b.n) + '<small class="class-tag">' + escapeMarkup(b.planetClass || '') + '</small></span><b style="color:' +
       (b.score == null ? '#7f8aa6' : css(b.score)) + '">' +
-      (b.score == null ? '—' : b.score) + '</b></button>'
+      (b.score == null ? '—' : b.score + (b.scoreMax != null && b.scoreMax > b.score ? '<small>teorik: ' + b.score + '–' + b.scoreMax + '</small>' : '')) + '</b></button>' +
+      '<a class="planet-map-sim" href="' + simulatorUrl(s.h, b.n) + '" title="Yaşam destek simülasyonunda aç" aria-label="' +
+      escapeMarkup(b.n) + ' için yaşam destek simülasyonunu aç">↗</a></div>'
     ).join('') +
     '<button class="go" data-go="1">Sistemi aç</button>';
 }
@@ -488,14 +474,22 @@ function showPlanet(b) {
   $('pc').innerHTML =
     '<h2>' + b.n + '</h2><div class="sub">' + b.k + ' · ' + curS.h + '</div>' +
     (b.score == null
-      ? '<div id="score" style="color:#7f8aa6">—<small> yetersiz veri (ölçümlerin en az %60\'ı gerekli)</small></div>'
-      : '<div id="score" style="color:' + css(b.score) + '">' + b.score + ' <small>/ 100 ön eleme puanı</small></div>') +
+      ? '<div id="score" style="color:#7f8aa6">—<small>bu senaryoda ölçüm yok</small></div>'
+      : '<div id="score" style="color:' + css(b.score) + '">' + b.score + ' <small>/ 100 · veri kapsamı %' + b.coverage + '</small>' + (b.scoreMax != null && b.scoreMax > b.score ? '<small class="score-range-note">Eksik ölçütler tam puan alsaydı teorik aralık: ' + b.score + '–' + b.scoreMax + '/100</small>' : '') + '</div>') +
+    (b.contested ? '<p class="note">NASA arşivinde doğrulaması sorgulanmış olarak işaretli; bu sonucu ihtiyatla yorumla.</p>' : '') +
+    (b.surfaceConcern
+      ? '<p class="note">Sıcaklık, basınç, atmosfer veya boyut kubbe ve yaşam destek yükünü artırabilir; bu koşullar puanı tek başına 0’a indirmez.</p>'
+      : '') +
     b.parts.map(x => '<div class="row"><div class="l"><span>' + x[0] + '</span><span>' + (x[1] == null ? 'veri yok' : Math.round(x[1] * 100) + '%') + '</span></div><div class="bar"><i style="width:' + (x[1] == null ? 0 : x[1] * 100) + '%;background:' + css(x[1] == null ? 0 : x[1] * 100) + '"></i></div></div>').join('') +
     '<dl><dt>' + (b.k == 'Ötegezegen' ? 'Denge sıcaklığı' : 'Yüzey sıcaklığı') + '</dt><dd>' + b.parts[2][2] + '</dd>' +
+    '<dt>Sınıflandırma</dt><dd>' + escapeMarkup(b.planetClass) + '</dd>' +
+    '<dt>Dünya\'ya sistem uzaklığı</dt><dd>' + fmt(curS.ly, 2) + ' ışık yılı</dd>' +
+    (b.pressureBar != null ? '<dt>Yüzey basıncı</dt><dd>' + b.pressureBar + ' bar</dd>' : '') +
+    (b.atmosphereSummary ? '<dt>Atmosfer</dt><dd>' + b.atmosphereSummary + '</dd>' : '') +
     '<dt>Yarıçap</dt><dd>' + b.parts[0][2] + '</dd><dt>Yıldıza gelen ışınım</dt><dd>' + b.parts[1][2] + '</dd>' +
     (b.a != null ? '<dt>Yıldıza uzaklık</dt><dd>' + fmt(b.a, 3) + ' AU</dd>' : '') +
     '<dt>Yıldız</dt><dd>' + curS.h + '</dd></dl>' +
-    '<p class="note">' + (b.fluxEstimated || b.tempEstimated ? 'Bazı ışınım/sıcaklık değerleri yıldız verilerinden tahmin edildi. ' : '') + 'Aynı 30/40/30 ölçütleri Python analiz kartı ve toplu raporda kullanılır. Bu proje tanımlı ön eleme endeksidir, NASA’nın resmî koloni puanı değildir. Ötegezegenlerde denge sıcaklığı, Güneş Sistemi’nde yüzey sıcaklığı kullanıldığı için karşılaştırma sınırlıdır. Atmosfer ve radyasyon değerlendirmesi içermez.</p>';
+    '<p class="note">' + (b.fluxEstimated || b.tempEstimated ? 'Bazı ışınım/sıcaklık değerleri yıldız verilerinden tahmin edildi. ' : '') + 'Puan kubbe ve yaşam destek sistemleriyle telafi edilebilir zorlukları kademeli değerlendirir; tek bir zor koşul toplam puanı otomatik olarak 0 yapmaz. En az bir ölçülebilir kriter varsa kısmi puan hesaplanır; hiçbir kriterde veri yoksa skor gösterilmez. Ötegezegenlerde basınç ve atmosfer ölçümü çoğunlukla bulunmadığından bu puan tek başına yaşanabilirlik göstergesi değildir. Boyut sınıfı yalnızca yarıçap göstergesidir. Ötegezegen denge sıcaklığı ve Güneş Sistemi yüzey sıcaklığı doğrudan aynı ölçüm değildir.</p>';
 }
 
 $('pc').addEventListener('click', e => {
@@ -766,6 +760,37 @@ function layout(labs) {
     });
 }
 
+const compassAxes = {
+  north: new THREE.Vector3(0, 1, 0),
+  south: new THREE.Vector3(0, -1, 0),
+  east: new THREE.Vector3(0, 0, -1),
+  west: new THREE.Vector3(0, 0, 1)
+};
+
+function updateCompass() {
+  const inverseCamera = cam.quaternion.clone().invert();
+  Object.entries(compassAxes).forEach(([direction, axis]) => {
+    const projected = axis.clone().applyQuaternion(inverseCamera);
+    const length = Math.hypot(projected.x, projected.y);
+    const visible = length > .025;
+    const radius = direction === 'north' || direction === 'south' ? 45 : 44;
+    const x = visible ? 60 + projected.x / length * radius : 60;
+    const y = visible ? 60 - projected.y / length * radius : 60;
+    const label = $('compass-' + direction);
+    label.setAttribute('x', x.toFixed(1));
+    label.setAttribute('y', y.toFixed(1));
+    label.style.opacity = visible ? Math.min(1, .25 + length * .75).toFixed(2) : '.18';
+
+    if (direction === 'north' || direction === 'east') {
+      const line = $('compass-' + direction + '-line');
+      const lineRadius = 31;
+      line.setAttribute('x2', (60 + projected.x / (length || 1) * lineRadius).toFixed(1));
+      line.setAttribute('y2', (60 - projected.y / (length || 1) * lineRadius).toFixed(1));
+      line.style.opacity = visible ? Math.min(1, .25 + length * .75).toFixed(2) : '.18';
+    }
+  });
+}
+
 (function loop() {
   const t = still ? 0 : clock.getElapsedTime();
 
@@ -802,6 +827,7 @@ function layout(labs) {
   );
 
   cam.lookAt(tgt);
+  updateCompass();
   stars.position.copy(cam.position);
 
   if (selObj) {

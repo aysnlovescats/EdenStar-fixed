@@ -1,0 +1,27 @@
+.guide-principle{margin:14px 0 16px;padding:14px 16px;border:1px solid rgba(255,195,91,.2);border-left:2px solid var(--gold);border-radius:7px;background:rgba(255,195,91,.035)}
+.guide-principle>span,.guide-ai-note>span{color:var(--gold);font-size:8px;font-weight:700;letter-spacing:.15em}
+.guide-principle p,.guide-principle small{display:block;margin:7px 0 0;color:#a9a899;font-size:10px;line-height:1.65}
+.guide-principle p b{color:#e0d4b8}
+.guide-principle small{color:#788c98}
+.guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.guide-card{display:flex;flex-direction:column;min-width:0;padding:17px;border:1px solid var(--line);border-radius:9px;background:linear-gradient(150deg,rgba(15,28,40,.94),rgba(8,15,23,.94))}
+.guide-card>header{padding-bottom:13px;border-bottom:1px solid rgba(115,170,202,.14)}
+.guide-index{color:var(--gold);font:9px Consolas,monospace;letter-spacing:.1em}
+.guide-card h3{margin:9px 0 5px;color:#e3eef3;font-size:15px;font-weight:550}
+.guide-card>header p,.guide-block p,.guide-block li{color:#91a2ad;font-size:10px;line-height:1.6}
+.guide-card>header p{margin:0}
+.guide-block{padding:12px 0 2px}
+.guide-block h4{margin:0 0 7px;color:#aed7e9;font-size:10px;font-weight:600}
+.guide-block ul{display:grid;gap:6px;margin:0;padding-left:17px}
+.guide-block li::marker{color:#72b7d5}
+.guide-block p{margin:0}
+.guide-sources{display:grid;gap:7px;margin-top:auto;padding:12px 0 13px;border-top:1px solid rgba(115,170,202,.1)}
+.guide-sources a{color:#82c5e7;font-size:9px;line-height:1.4}
+.guide-sources a:hover{text-decoration:underline}
+.guide-rank-button{width:100%;min-height:36px;padding:8px;border:1px solid rgba(255,195,91,.35);border-radius:6px;background:rgba(255,195,91,.035);color:#ffd27f;font-size:9px;text-align:left;cursor:pointer}
+.guide-rank-button:hover{border-color:var(--gold);background:rgba(255,195,91,.08)}
+.guide-ai-note{margin-top:14px;padding:15px 17px;border:1px solid rgba(111,179,214,.2);border-radius:8px;background:linear-gradient(100deg,rgba(38,93,119,.13),rgba(9,18,27,.4))}
+.guide-ai-note h3{margin:7px 0 5px;color:#dceaf1;font-size:12px;font-weight:550}
+.guide-ai-note p{max-width:900px;margin:0;color:#91a2ad;font-size:10px;line-height:1.65}
+@media(max-width:1050px){.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.guide-grid{grid-template-columns:1fr}}

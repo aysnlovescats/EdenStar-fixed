@@ -2,7 +2,11 @@ Claude incelemesindeki düzeltmeler
 
 - Boş NASA hücreleri artık 0 sayılmıyor; eksik sıcaklık -273,15 °C, eksik kütle de 0 yerçekimi olarak gösterilmez.
 - Tarayıcı önbellek anahtarı v2 oldu.
-- Yıldız haritası, sistem görünümü, Python API'si ve CSV raporu aynı 30/40/30 ön eleme ölçütlerini kullanıyor. Veri kapsamı %60'ın altındaysa skor null ve arayüzde puan gösterilmiyor.
+- Yıldız haritası ile Python API'si aynı ölçütleri kullanıyor. Skor artık bilinen ölçütleri tüm senaryo ağırlıklarına böler; tek bir yüksek ölçüm düşük kapsamda yüksek toplam puan üretemez. Veri yoksa skor gösterilmez.
+- Yarıçapa dayalı boyut sınıflandırması API, ekranlar ve toplu CSV raporuna eklendi; bileşimin yarıçaptan kesin belirlenemediği açıkça belirtiliyor.
+- Yörünge senaryosunda Dünya'ya uzaklık, toplam ağırlığın %5'i olan kaba bir erişim vekili olarak tutuluyor.
+- Yüzey skoru kubbe senaryosuna göre kademeli: sıcaklık %20, yarıçap %15, yerçekimi %10, ışınım %15, dış basınç %25 ve atmosfer yönetimi %15 ağırlıkta. Zorlu koşullar skoru otomatik olarak 0'a indirmiyor; eksik ölçümler kapsam/güven bilgisini düşürüyor.
+- Ana Yüzey / Yer altı / Yörünge seçenekleri korundu; Yüzey altında açık yaşam, basınçlı kubbe, regolit koruması ve Venüs'e özel yüksek irtifa konsepti ayrı seçenekler yapıldı. Veri yoksa alt senaryo puanı uydurulmuyor.
 - NASA ışınımı yoksa yıldız parlaklığı ve uzaklıkla hesaplama deneniyor; denge sıcaklığı eksikse varsayımlı tahmin açıkça işaretleniyor.
 - Harita konumu eksik yıldızlar (0,0,0)'a yerleştirilmiyor. Sık etiketleri azaltmak için yalnızca seçilmiş sistem adlandırılıyor; haritadaki diğer yıldız noktaları duruyor.
 - Harita sayfası system-view.css yüklemiyor. Sistem CSS'indeki medya sorgusu/parantez hatası düzeltildi.

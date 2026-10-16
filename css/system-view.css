@@ -175,6 +175,12 @@ input[type="range"] {
   color: var(--muted);
   text-align: right;
 }
+.planet-size-class {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+}
 
 .details {
   margin-top: 14px;
@@ -201,20 +207,237 @@ input[type="range"] {
 .colony-card{position:fixed;z-index:3;top:50%;right:350px;width:min(320px,calc(100vw - 28px));max-height:70vh;padding:20px;overflow:auto;transform:translateY(-50%);border:1px solid var(--border);border-radius:12px;background:var(--panel);box-shadow:0 8px 30px #0008}.colony-card[hidden]{display:none}.close-card{float:right;border:0;background:transparent;color:var(--muted);font-size:24px;cursor:pointer}.card-kicker{margin:4px 28px 12px 0;color:var(--gold);font-size:10px;letter-spacing:.12em}.colony-card h2{margin:0 0 10px;color:var(--blue)}.analysis-note,.missing-data{color:var(--muted);font-size:11px;line-height:1.6}.analysis-check{padding:10px 0;border-bottom:1px solid rgba(90,157,205,.18)}.analysis-check strong,.analysis-check span{display:block}.analysis-check strong{margin-bottom:4px;color:var(--text);font-size:12px}.analysis-check span{color:var(--muted);font-size:11px}.missing-data{display:grid;gap:5px;margin-top:14px;padding:12px;border:1px solid rgba(255,182,46,.25);border-radius:8px}.missing-data strong{color:var(--gold)}
 @media(max-width:700px){.colony-card{top:auto;right:8px;bottom:40vh;width:min(270px,calc(100vw - 16px));max-height:35vh;padding:12px;transform:none}}
 
-  /* Koloni senaryosu seçimi ve seçili senaryonun göstergeleri */
+  /* Main settlement modes and surface-specific approaches */
 .scenario-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
 .scenario-tabs button{padding:9px 5px;border:1px solid rgba(90,157,205,.28);border-radius:7px;background:rgba(7,17,29,.8);color:var(--muted);font:inherit;font-size:11px;cursor:pointer}
 .scenario-tabs button:hover,.scenario-tabs button.active{border-color:var(--gold);color:var(--gold);background:rgba(255,182,46,.08)}
+.scenario-choices{display:grid;gap:8px;margin:12px 0}
+.scenario-choice{display:grid;grid-template-columns:minmax(0,1fr) minmax(75px,42%);gap:5px 10px;width:100%;padding:12px;border:1px solid rgba(90,157,205,.28);border-radius:8px;background:rgba(7,17,29,.8);color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.scenario-choice:hover{border-color:var(--gold);background:rgba(255,182,46,.08)}
+.scenario-choice span,.scenario-choice strong,.scenario-choice small{display:block}
+.scenario-choice strong{color:var(--blue);font-size:12px}
+.scenario-choice small{margin-top:4px;color:var(--muted);font-size:10px;line-height:1.45}
+.scenario-choice>b{color:var(--gold);font-size:10px;line-height:1.4;text-align:right;white-space:normal}
+.scenario-choice em{grid-column:1/-1;color:var(--muted);font-size:10px;font-style:normal;text-align:right}
+.scenario-back{margin:4px 0 8px;padding:7px 9px;border:1px solid rgba(90,157,205,.28);border-radius:6px;background:transparent;color:var(--muted);font:inherit;font-size:10px;cursor:pointer}
+.scenario-back:hover{border-color:var(--gold);color:var(--gold)}
 .scenario-description{margin:8px 0;color:var(--muted);font-size:11px;line-height:1.5}
 .scenario-result{margin:12px 0;padding:12px;border:1px solid rgba(90,157,205,.24);border-radius:9px;background:rgba(7,17,29,.78)}
 .scenario-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .scenario-heading h3{margin:0;color:var(--blue);font-size:13px}
 .scenario-heading strong{color:var(--gold);font-size:17px;white-space:nowrap}
+.scenario-score-block{display:grid;justify-items:end;gap:5px;max-width:62%;text-align:right}
+.scenario-score-block small,.score-range-note{color:#b19c79;font-size:8px;line-height:1.4;white-space:normal}
 .scenario-meta{margin:6px 0 9px;color:var(--muted);font-size:10px}
 .scenario-criterion{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(90,157,205,.12);font-size:10px}
 .scenario-criterion span{color:var(--muted)}
 .scenario-criterion small{color:#637d8e}
 .scenario-criterion b{color:var(--text);white-space:nowrap}
 .analysis-note{font-size:10px;line-height:1.55}
+.planet-class-info{margin:0 0 10px;padding:8px 10px;border:1px solid rgba(90,157,205,.22);border-radius:7px;color:var(--muted);font-size:10px;line-height:1.5}
+.planet-class-info.uncertain{border-color:rgba(255,182,46,.32);color:var(--gold)}
+.planet-access-info{margin:0 0 10px;color:var(--muted);font-size:10px;line-height:1.5}
+.critical-checks{margin-top:12px;padding-top:10px;border-top:1px solid rgba(90,157,205,.18)}
+.critical-checks>strong{display:block;margin-bottom:6px;color:var(--gold);font-size:10px}
+.critical-check{display:grid;grid-template-columns:1fr auto;gap:3px 8px;padding:6px 0;border-top:1px solid rgba(90,157,205,.1);font-size:10px}
+.critical-check strong{color:var(--muted);font-weight:400}
+.critical-check b{color:var(--text)}
+.critical-check.risk b{color:#ff7b72}
+.critical-check.unknown b{color:var(--gold)}
+.critical-check small{grid-column:1/-1;color:#718797}
+.guardrail-note{display:block;margin-top:6px;color:#718797}
+.dataset-sources{margin:12px 0;padding:11px;border:1px solid rgba(90,157,205,.2);border-radius:8px;background:rgba(7,17,29,.55)}
+.dataset-sources h4{margin:0 0 5px;color:var(--gold);font-size:11px}
+.dataset-sources>p{margin:0 0 8px;color:var(--muted);font-size:10px;line-height:1.45}
+.dataset-card{padding:8px 0;border-top:1px solid rgba(90,157,205,.14)}
+.dataset-card-heading{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.dataset-card-heading strong{color:var(--blue);font-size:10px;line-height:1.4}
+.dataset-card-heading span{flex:none;color:#718797;font-size:9px}
+.dataset-card p,.dataset-card>small{display:block;margin:4px 0;color:var(--muted);font-size:9px;line-height:1.45}
+.dataset-card .dataset-measurement{color:var(--gold)}
+.dataset-card a{display:inline-block;margin-top:3px;color:#75c6f3;font-size:9px;text-decoration:none}
+.dataset-card a:hover{text-decoration:underline}
 #colonyCard:not([hidden]){width:min(430px,calc(100vw - 28px));right:350px;max-height:82vh}
 @media(max-width:700px){#colonyCard:not([hidden]){right:8px;left:8px;width:auto;bottom:40vh;max-height:38vh}}
+
+/* Expanded mission-planning workspace */
+#colonyCard:not([hidden]){
+  position:fixed;z-index:5;inset:0;display:grid;place-items:center;width:auto;max-height:none;padding:20px;overflow:hidden;
+  transform:none;border:0;border-radius:0;background:rgba(1,5,12,.72);box-shadow:none;backdrop-filter:blur(8px)
+}
+.mission-frame{display:flex;flex-direction:column;width:min(1320px,100%);height:min(900px,100%);min-height:0;overflow:hidden;border:1px solid rgba(114,187,229,.36);border-radius:14px;background:#070e18;box-shadow:0 26px 90px #000b,0 0 0 1px rgba(255,255,255,.025) inset}
+.mission-topline{display:flex;align-items:center;gap:18px;min-height:58px;padding:0 22px;border-bottom:1px solid rgba(114,187,229,.18);background:linear-gradient(90deg,#0c1a29,#09111c 58%,#0c1724)}
+.mission-brand{display:flex;align-items:center;gap:10px;color:#eaf5fc;font:700 11px/1 "Segoe UI",Arial,sans-serif;letter-spacing:.14em}
+.mission-brand small{display:block;margin-top:5px;color:#7894a8;font-size:8px;letter-spacing:.2em}
+.mission-symbol{display:grid;place-items:center;width:29px;height:29px;border:1px solid rgba(117,199,255,.4);border-radius:50%;color:#82d1ff;font-size:15px}
+.mission-status{margin-left:auto;color:#9ab0c0;font:600 9px/1 "Segoe UI",Arial,sans-serif;letter-spacing:.14em}
+.mission-status i{display:inline-block;width:6px;height:6px;margin:0 7px 1px 0;border-radius:50%;background:#64d6a3;box-shadow:0 0 9px #64d6a3}
+.mission-topline .close-card{float:none;display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(140,174,197,.2);border-radius:7px;color:#a9bdca;font:300 24px/1 "Segoe UI",Arial,sans-serif;transition:background .18s,border-color .18s,color .18s}
+.mission-topline .close-card:hover{border-color:#ffb62e;background:rgba(255,182,46,.08);color:#ffca62}
+.mission-workspace{display:grid;grid-template-columns:300px minmax(0,1fr);flex:1;min-height:0;overflow:hidden}
+.mission-rail{display:flex;flex-direction:column;min-height:0;padding:19px 18px 14px;overflow:auto;border-right:1px solid rgba(114,187,229,.17);background:linear-gradient(180deg,#0a1521,#08111b 64%,#09131e)}
+.planet-feature{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:208px;padding:12px 13px;overflow:hidden;border:1px solid rgba(114,187,229,.2);border-radius:10px;background:radial-gradient(ellipse at 55% 10%,rgba(45,90,122,.4),transparent 64%),linear-gradient(150deg,#101e2d,#0a1019 72%)}
+.feature-label,.feature-caption small{position:relative;z-index:1;color:#7c98ab;font:600 8px/1.3 "Segoe UI",Arial,sans-serif;letter-spacing:.17em}
+.planet-art{position:absolute;top:21px;right:22px;width:137px;height:137px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#e4caac 0,#ab7651 22%,#63402f 51%,#261b1a 76%);box-shadow:inset -19px -10px 30px #080b12,inset 4px 5px 14px #f4d7b377,0 0 36px #d77a3a20}
+.planet-art:after{position:absolute;inset:0;border-radius:50%;background:repeating-linear-gradient(176deg,transparent 0 12px,#201a1c35 13px 17px,transparent 18px 29px);content:"";mix-blend-mode:screen;opacity:.8}
+.planet-feature[data-body="mars"] .planet-art{background:radial-gradient(circle at 33% 28%,#e4aa76 0,#b95736 24%,#7b3329 55%,#291b1c 78%);box-shadow:inset -19px -10px 30px #080b12,inset 4px 5px 14px #ffd0a077,0 0 38px #e2643c30}
+.planet-feature[data-body="venus"] .planet-art{background:radial-gradient(circle at 35% 29%,#ffe5a4 0,#e3ae61 27%,#a96a36 58%,#32231b 80%);box-shadow:inset -19px -10px 30px #080b12,inset 4px 5px 14px #fff0bcaa,0 0 38px #ffc76830}
+.planet-feature[data-body="earth"] .planet-art{background:radial-gradient(circle at 35% 26%,#a5dfec 0,#337fa1 35%,#1c4c72 62%,#111c31 81%);box-shadow:inset -19px -10px 30px #080b12,inset 3px 4px 14px #caf5ff88,0 0 38px #48a9e930}
+.planet-feature[data-body="moon"] .planet-art{background:radial-gradient(circle at 34% 27%,#e6e5dc 0,#9c9c99 32%,#555b60 62%,#181d25 81%);box-shadow:inset -19px -10px 30px #080b12,inset 3px 4px 14px #ffffff88,0 0 35px #a4b2c520}
+.planet-feature[data-body="mercury"] .planet-art,.planet-feature[data-body="moon"] .planet-art{background-image:radial-gradient(ellipse at 28% 37%,#343b40 0 5%,transparent 6%),radial-gradient(ellipse at 66% 28%,#43484a 0 8%,transparent 9%),radial-gradient(ellipse at 55% 67%,#30363b 0 11%,transparent 12%),radial-gradient(circle at 34% 27%,#dedbd0 0,#989a96 34%,#545a60 67%,#151b25 84%)}
+.planet-feature[data-body="earth"] .planet-art{background-image:radial-gradient(ellipse at 37% 35%,#75a875 0 12%,transparent 13%),radial-gradient(ellipse at 63% 59%,#73a76f 0 14%,transparent 15%),radial-gradient(ellipse at 54% 38%,#bdd99b 0 5%,transparent 6%),radial-gradient(circle at 35% 26%,#a5dfec 0,#337fa1 35%,#1c4c72 62%,#111c31 81%)}
+.planet-feature[data-body="earth"] .planet-art:after{background:repeating-linear-gradient(152deg,transparent 0 23px,#e9f7ff42 24px 27px,transparent 28px 46px);mix-blend-mode:screen}
+.planet-feature[data-body="jupiter"] .planet-art{background:repeating-linear-gradient(177deg,#d8b98d 0 9px,#9b6847 10px 15px,#edcea0 16px 25px,#9f6245 26px 31px,#d9b58d 32px 42px);box-shadow:inset -19px -10px 30px #080b12,inset 4px 5px 14px #f5dfbd99,0 0 38px #d99e6430}
+.planet-feature[data-body="jupiter"] .planet-art:after{background:radial-gradient(ellipse at 68% 59%,#a84c39 0 9%,#d58b61 10% 12%,transparent 13%),linear-gradient(90deg,transparent,#fff3 48%,transparent 70%)}
+.planet-feature[data-body="saturn"] .planet-art{background:repeating-linear-gradient(177deg,#f4d99d 0 11px,#b68953 12px 16px,#ecd098 17px 28px,#c2925c 29px 34px,#f1dbaa 35px 45px);box-shadow:inset -19px -10px 30px #080b12,inset 4px 5px 14px #fff0c499,0 0 38px #e8c07830}
+.planet-feature[data-body="saturn"] .planet-art:before{position:absolute;z-index:1;top:40px;left:-29px;width:195px;height:55px;border:10px solid #d6b675aa;border-right-color:#f2d8a0cc;border-bottom-color:#8f704e99;border-radius:50%;transform:rotate(-22deg);content:""}
+.planet-feature[data-body="saturn"] .planet-art:after{background:linear-gradient(90deg,transparent,#fff4 50%,transparent 75%)}
+.planet-feature[data-body="uranus"] .planet-art,.planet-feature[data-body="neptune"] .planet-art{background:repeating-linear-gradient(174deg,#b5e8e5 0 12px,#72b7c6 13px 18px,#98d6da 19px 31px,#579bb1 32px 36px);box-shadow:inset -19px -10px 30px #080b12,inset 4px 5px 14px #ecffffaa,0 0 38px #60c8e430}
+.planet-feature[data-body="neptune"] .planet-art{background:repeating-linear-gradient(174deg,#5f9fd0 0 11px,#28558c 12px 16px,#77b4df 17px 29px,#35699d 30px 34px);box-shadow:inset -19px -10px 30px #080b12,inset 4px 5px 14px #cae7ffaa,0 0 38px #4d9de830}
+.planet-feature[data-body="europa"] .planet-art{background-image:linear-gradient(37deg,transparent 45%,#864f3c 46% 47%,transparent 48%),linear-gradient(147deg,transparent 35%,#a45e45 36% 37%,transparent 38%),linear-gradient(85deg,transparent 62%,#8b5747 63% 64%,transparent 65%),radial-gradient(circle at 34% 27%,#f6e2c9 0,#cfb398 43%,#80695e 72%,#292a32 84%)}
+.planet-feature[data-body="titan"] .planet-art{background:radial-gradient(ellipse at 43% 45%,#d69c51 0 16%,transparent 17%),radial-gradient(circle at 34% 27%,#f4c274 0,#c67b39 37%,#814326 68%,#231b1c 84%);box-shadow:inset -19px -10px 30px #080b12,inset 4px 5px 14px #ffe0a477,0 0 38px #ed9b3730}
+.planet-feature[data-body="enceladus"] .planet-art{background-image:radial-gradient(ellipse at 32% 62%,#fff 0 18%,transparent 19%),radial-gradient(ellipse at 67% 38%,#e4f5f7 0 21%,transparent 22%),radial-gradient(circle at 34% 27%,#f8ffff 0,#cde5e8 42%,#7798a5 72%,#18222c 84%)}
+.planet-feature[data-body^="exoplanet-"] .planet-art{filter:hue-rotate(var(--exoplanet-hue,0deg));box-shadow:inset -19px -10px 30px #080b12,inset 3px 4px 14px #fff8,0 0 40px #9c76ff38}
+.planet-feature[data-body="exoplanet-0"] .planet-art{background:radial-gradient(circle at 34% 27%,#f6d08f 0,#d47a49 34%,#814437 68%,#211824 84%)}
+.planet-feature[data-body="exoplanet-1"] .planet-art{background:repeating-linear-gradient(171deg,#eacb99 0 11px,#966c78 12px 17px,#d5a6a0 18px 29px,#704b69 30px 35px)}
+.planet-feature[data-body="exoplanet-2"] .planet-art{background:radial-gradient(circle at 34% 27%,#bde8d2 0,#49a698 34%,#276275 68%,#171c2c 84%)}
+.planet-feature[data-body="exoplanet-3"] .planet-art{background:repeating-linear-gradient(178deg,#f6d5b0 0 9px,#b76e59 10px 15px,#d5a27c 16px 25px,#754764 26px 31px)}
+.planet-feature[data-body="exoplanet-4"] .planet-art{background:radial-gradient(circle at 34% 27%,#e6c8ff 0,#8d6cd1 36%,#474083 68%,#15182b 84%)}
+.planet-feature[data-body="exoplanet-5"] .planet-art{background:repeating-linear-gradient(175deg,#add9f0 0 12px,#478cb1 13px 18px,#7ebacf 19px 29px,#365985 30px 35px)}
+.planet-feature[data-body="exoplanet-6"] .planet-art{background:radial-gradient(circle at 34% 27%,#ffd5c7 0,#d6687c 34%,#763e74 68%,#20162c 84%)}
+.planet-feature[data-body="exoplanet-7"] .planet-art{background:repeating-linear-gradient(175deg,#f0dfb3 0 10px,#ad8b4f 11px 16px,#e4c88d 17px 28px,#87654a 29px 34px)}
+.planet-art{transition:opacity .2s ease}
+.planet-photo{position:absolute;z-index:0;top:15px;right:6px;width:170px;height:150px;object-fit:contain;mix-blend-mode:screen;pointer-events:none}
+.planet-photo[hidden]{display:none!important}
+.planet-image-credit[hidden]{display:none!important}
+.planet-feature[data-body="venus"] .planet-photo{right:18px;width:137px;height:137px;object-fit:cover;object-position:left center}
+.planet-feature.has-photo .planet-art{opacity:0}
+.feature-caption{position:relative;z-index:1}
+.feature-caption h2{margin:4px 0 0;color:#eef7fc;font:600 22px/1.1 "Segoe UI",Arial,sans-serif;letter-spacing:.01em}
+.planet-image-credit{display:block;width:max-content;max-width:100%;margin:6px 1px 2px;color:#7798ac;font:9px/1.4 "Segoe UI",Arial,sans-serif;text-decoration:none;transition:color .15s ease}
+.planet-image-credit:hover{color:#ffca62;text-decoration:underline}
+.mission-rail .planet-class-info{margin:12px 0 5px;padding:9px 10px;border-color:rgba(114,187,229,.16);border-radius:7px;background:rgba(18,34,48,.48);font:11px/1.45 "Segoe UI",Arial,sans-serif}
+.mission-rail .planet-access-info{margin:4px 1px;color:#8298a7;font:10px/1.45 "Segoe UI",Arial,sans-serif}
+.comparison-open{width:100%;margin-top:9px;padding:9px 10px;border:1px solid rgba(114,187,229,.22);border-radius:7px;background:rgba(11,23,35,.72);color:#a8c6d7;text-align:left;font:500 10px/1.3 "Segoe UI",Arial,sans-serif;cursor:pointer}
+.comparison-open:hover,.comparison-open[aria-expanded="true"]{border-color:rgba(255,190,82,.55);color:#ffd17a;background:rgba(255,182,46,.07)}
+.rail-divider{height:1px;margin:12px 0 15px;background:rgba(114,187,229,.14)}
+.rail-section-title{display:flex;align-items:center;gap:9px;color:#c8d9e4;font:600 9px/1.4 "Segoe UI",Arial,sans-serif;letter-spacing:.12em}
+.rail-section-title span{color:#ffbd4a;font:600 10px/1 Consolas,monospace}
+.rail-copy{margin:7px 0 10px;color:#8195a4;font:11px/1.5 "Segoe UI",Arial,sans-serif}
+.scenario-tabs{display:grid;grid-template-columns:1fr;gap:6px;margin:0}
+.scenario-tabs button{display:flex;align-items:center;min-height:39px;padding:0 12px;border-color:rgba(114,187,229,.17);border-radius:7px;background:rgba(11,23,35,.72);color:#9dafbc;text-align:left;font:500 11px/1 "Segoe UI",Arial,sans-serif;transition:background .18s,border-color .18s,color .18s}
+.scenario-tabs button:before{width:6px;height:6px;margin-right:11px;border:1px solid #587386;border-radius:50%;content:""}
+.scenario-tabs button:hover{border-color:rgba(255,190,82,.55);color:#f1ca83}
+.scenario-tabs button.active{border-color:rgba(255,185,65,.7);background:linear-gradient(90deg,rgba(255,182,46,.14),rgba(255,182,46,.035));color:#ffd17a}
+.scenario-tabs button.active:before{border-color:#ffc15b;background:#ffc15b;box-shadow:0 0 9px #ffc15b99}
+.rail-footnote{display:flex;align-items:flex-start;gap:8px;margin-top:auto;padding-top:16px;color:#718899;font:9px/1.5 "Segoe UI",Arial,sans-serif}
+.status-dot{flex:none;width:6px;height:6px;margin-top:3px;border-radius:50%;background:#72bfe8}
+.mission-content{min-width:0;min-height:0;padding:clamp(20px,3vw,42px);overflow:auto;background:radial-gradient(ellipse at 92% 0,rgba(31,69,96,.18),transparent 36%),linear-gradient(145deg,#0a111a,#080d15 62%,#0a111a);font-family:"Segoe UI",Arial,sans-serif}
+.content-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:8px}
+.content-heading .eyebrow{color:#83bde0;font:600 9px/1.4 "Segoe UI",Arial,sans-serif;letter-spacing:.19em}
+.content-heading h3{margin:6px 0 0;color:#edf5f9;font:500 clamp(22px,2.8vw,32px)/1.1 "Segoe UI",Arial,sans-serif;letter-spacing:-.02em}
+.section-index{color:#748998;font:10px/1 Consolas,monospace;letter-spacing:.1em}
+.mission-content .analysis-note{max-width:760px;color:#8fa1ae;font:12px/1.65 "Segoe UI",Arial,sans-serif}
+.scenario-choices{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin:22px 0}
+.scenario-choice{position:relative;grid-template-columns:minmax(0,1fr) auto;min-height:154px;align-content:start;gap:10px 14px;padding:19px;border-color:rgba(114,187,229,.2);border-radius:10px;background:linear-gradient(145deg,rgba(17,31,44,.94),rgba(9,17,27,.96));transition:transform .18s,border-color .18s,background .18s}
+.scenario-choice:before{position:absolute;top:0;left:18px;width:34px;height:2px;background:#5ebbe9;content:""}
+.scenario-choice:hover{transform:translateY(-2px);border-color:rgba(116,207,249,.62);background:linear-gradient(145deg,rgba(20,40,57,.98),rgba(9,17,27,.98))}
+.scenario-choice strong{color:#dcecf5;font:600 14px/1.35 "Segoe UI",Arial,sans-serif}
+.scenario-choice small{max-width:520px;margin-top:7px;color:#8b9da9;font:11px/1.55 "Segoe UI",Arial,sans-serif}
+.scenario-choice>b{align-self:start;color:#ffc35b;font:600 10px/1.45 "Segoe UI",Arial,sans-serif}
+.scenario-choice em{align-self:end;color:#7cbadd;font:500 10px/1 "Segoe UI",Arial,sans-serif;letter-spacing:.04em}
+.mission-content .scenario-result{margin:10px 0 18px;padding:20px;border-color:rgba(114,187,229,.2);border-radius:10px;background:linear-gradient(145deg,rgba(15,27,39,.85),rgba(8,15,24,.85))}
+.mission-content .scenario-heading h3{color:#e9f3f8;font:600 16px/1.3 "Segoe UI",Arial,sans-serif}
+.mission-content .scenario-heading strong{color:#ffc35b;font:600 25px/1 "Segoe UI",Arial,sans-serif}
+.mission-content .scenario-description{color:#9badb9;font:12px/1.65 "Segoe UI",Arial,sans-serif}
+.mission-content .scenario-meta{color:#8195a3;font:10px/1.5 "Segoe UI",Arial,sans-serif}
+.mission-content .scenario-criterion{display:grid;grid-template-columns:minmax(150px,1fr) minmax(70px,100px) minmax(90px,160px);align-items:center;gap:12px;padding:10px 0;border-color:rgba(114,187,229,.12);font:11px/1.35 "Segoe UI",Arial,sans-serif}
+.mission-content .scenario-criterion span{color:#a9bac5}
+.mission-content .scenario-criterion b{color:#dceaf2;text-align:right}
+.mission-content .scenario-criterion small{text-align:right}
+.criterion-status{display:inline-block;margin-left:7px;padding:2px 5px;border:1px solid rgba(114,187,229,.2);border-radius:4px;color:#8da7b7;font:8px/1.3 "Segoe UI",Arial,sans-serif;white-space:normal}
+.criterion-status.estimated{border-color:rgba(255,190,82,.3);color:#ffc35b}
+.criterion-status.unknown{border-color:rgba(145,161,174,.24);color:#8999a4}
+.criterion-explanation{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;grid-column:1/-1;color:#718797;font-size:9px}
+.scenario-guidance{margin:14px 0;padding:15px;border:1px solid rgba(114,187,229,.16);border-radius:9px;background:rgba(10,20,30,.48)}
+.scenario-guidance h4{margin:0 0 8px;color:#ffc35b;font:600 11px/1.4 "Segoe UI",Arial,sans-serif;letter-spacing:.04em}
+.scenario-guidance-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.scenario-guidance ul{margin:0;padding-left:17px;color:#9badb9;font:10px/1.6 "Segoe UI",Arial,sans-serif}
+.scenario-guidance li+li{margin-top:4px}
+.scenario-guidance .guidance-title{display:block;margin-bottom:5px;color:#7eb8d9;font:600 9px/1.3 "Segoe UI",Arial,sans-serif;text-transform:uppercase;letter-spacing:.1em}
+.comparison-planet-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:18px 0}
+.comparison-planet-choice{display:flex;align-items:center;gap:9px;min-height:42px;padding:8px 10px;border:1px solid rgba(114,187,229,.18);border-radius:7px;background:rgba(11,23,35,.68);color:#a8bac6;font:10px/1.35 "Segoe UI",Arial,sans-serif;cursor:pointer}
+.comparison-planet-choice:has(input:checked){border-color:rgba(255,190,82,.55);color:#ffdc9a;background:rgba(255,182,46,.07)}
+.comparison-planet-choice input{accent-color:#ffc35b}
+.comparison-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0 20px;color:#9badb9;font:10px/1.4 "Segoe UI",Arial,sans-serif}
+.comparison-controls select,.comparison-controls button{min-height:34px;padding:7px 10px;border:1px solid rgba(114,187,229,.24);border-radius:6px;background:#0a1520;color:#dceaf2;font:10px "Segoe UI",Arial,sans-serif}
+.comparison-controls button{border-color:rgba(255,190,82,.55);color:#ffd17a;cursor:pointer}
+.comparison-controls button:hover{background:rgba(255,182,46,.1)}
+.comparison-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px}
+.comparison-card{min-width:0;padding:15px;border:1px solid rgba(114,187,229,.18);border-radius:9px;background:rgba(10,20,30,.66)}
+.comparison-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding-bottom:10px;border-bottom:1px solid rgba(114,187,229,.14)}
+.comparison-card h4{margin:0;color:#dcecf5;font:600 13px/1.35 "Segoe UI",Arial,sans-serif}
+.comparison-score{color:#ffc35b;font:600 19px/1 "Segoe UI",Arial,sans-serif;white-space:nowrap}
+.comparison-score small{display:block;margin-top:4px;color:#8095a4;text-align:right;font:9px/1.3 "Segoe UI",Arial,sans-serif}
+.comparison-criterion{padding:8px 0;border-bottom:1px solid rgba(114,187,229,.1)}
+.comparison-criterion-top{display:flex;justify-content:space-between;gap:8px;color:#a9bac5;font:10px/1.4 "Segoe UI",Arial,sans-serif}
+.comparison-criterion-top b{color:#dceaf2;text-align:right}
+.comparison-criterion small{display:block;margin-top:4px;color:#788e9d;font:9px/1.4 "Segoe UI",Arial,sans-serif}
+.comparison-criterion .criterion-status{margin:4px 0 0}
+.comparison-guidance-note{margin:12px 0;color:#8195a3;font:10px/1.55 "Segoe UI",Arial,sans-serif}
+.scenario-guidance[hidden],#comparisonPanel[hidden]{display:none}
+.mission-content .critical-checks{border-color:rgba(114,187,229,.17)}
+.mission-content .critical-checks>strong{color:#ffc35b;font:600 10px/1.4 "Segoe UI",Arial,sans-serif;letter-spacing:.06em}
+.mission-content .analysis-check{border-color:rgba(114,187,229,.13)}
+.mission-content .analysis-check strong{color:#c7d8e2;font:600 11px/1.4 "Segoe UI",Arial,sans-serif}
+.mission-content .analysis-check span{font:11px/1.5 "Segoe UI",Arial,sans-serif}
+.mission-content .dataset-sources{margin:16px 0;padding:16px;border-color:rgba(114,187,229,.17);border-radius:9px;background:rgba(10,20,30,.55)}
+.mission-content .dataset-sources h4{font:600 12px/1.4 "Segoe UI",Arial,sans-serif;letter-spacing:.03em}
+.mission-content .dataset-sources>p,.mission-content .dataset-card p,.mission-content .dataset-card>small{font:10px/1.55 "Segoe UI",Arial,sans-serif}
+.mission-content .dataset-card-heading strong{font:600 11px/1.4 "Segoe UI",Arial,sans-serif}
+.mission-content .dataset-card a{font:600 10px/1.4 "Segoe UI",Arial,sans-serif}
+.mission-content .analysis-note{margin-top:14px}
+.scenario-back{margin-bottom:14px;padding:8px 11px;border-color:rgba(114,187,229,.22);color:#91b9cf;font:500 10px/1 "Segoe UI",Arial,sans-serif}
+.mission-footer{display:flex;justify-content:space-between;gap:10px;padding:10px 20px;border-top:1px solid rgba(114,187,229,.14);background:#080f18;color:#607687;font:8px/1.3 "Segoe UI",Arial,sans-serif;letter-spacing:.1em}
+
+@media(max-width:820px){
+  #colonyCard:not([hidden]){padding:10px}
+  .mission-frame{height:100%;border-radius:10px}
+  .mission-workspace{grid-template-columns:230px minmax(0,1fr)}
+  .mission-rail{padding:14px}
+  .planet-feature{min-height:170px}
+  .planet-art{top:30px;right:8px;width:115px;height:115px}
+  .mission-content{padding:22px}
+}
+@media(max-width:620px){
+  #colonyCard:not([hidden]){padding:0}
+  .mission-frame{width:100%;height:100%;border:0;border-radius:0}
+  .mission-topline{min-height:50px;padding:0 13px}
+  .mission-status{font-size:7px;letter-spacing:.07em}
+  .mission-workspace{display:flex;flex-direction:column;overflow:auto}
+  .mission-rail{display:block;flex:none;padding:11px 12px 12px;overflow:visible;border-right:0;border-bottom:1px solid rgba(114,187,229,.17)}
+  .planet-feature{min-height:112px;padding:10px 12px}
+  .planet-art{top:9px;right:18px;width:91px;height:91px}
+  .feature-caption h2{font-size:18px}
+  .mission-rail .planet-class-info{margin:8px 0 3px;padding:7px 9px}
+  .mission-rail .planet-access-info{margin:3px 1px}
+  .rail-divider{margin:8px 0}
+  .rail-section-title,.rail-copy,.rail-footnote{display:none}
+  .scenario-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .scenario-tabs button{justify-content:center;min-height:35px;padding:0 5px;font-size:10px;text-align:center}
+  .scenario-tabs button:before{display:none}
+  .mission-content{flex:none;min-height:420px;padding:18px 13px 24px;overflow:visible}
+  .scenario-choice{min-height:125px;padding:15px}
+  .mission-content .scenario-result{padding:14px}
+  .mission-content .scenario-criterion{grid-template-columns:minmax(0,1fr) 80px;gap:6px}
+  .mission-content .scenario-criterion small{grid-column:1/-1;text-align:left}
+  .scenario-guidance-grid{grid-template-columns:1fr}
+  .mission-footer{padding:8px 12px;font-size:7px}
+}
+.phl-detail{margin:12px 0;padding:16px;border:1px solid rgba(111,172,204,.24);border-radius:9px;background:linear-gradient(145deg,rgba(14,29,41,.84),rgba(8,16,25,.82))}
+.phl-detail>p{margin:10px 0;color:#8ea2ae;font-size:11px;line-height:1.6}
+.phl-detail>a{color:#8cc9e9;font-size:10px}
+.phl-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:12px}
+.phl-detail-grid>div{display:grid;gap:5px;padding:9px;border:1px solid rgba(115,170,202,.12);border-radius:6px}
+.phl-detail-grid small{color:#7d94a2;font-size:9px}
+.phl-detail-grid strong{color:#dceaf1;font-size:11px}

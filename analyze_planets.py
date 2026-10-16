@@ -2,7 +2,8 @@
 import csv
 from pathlib import Path
 
-from analysis.metrics import derive_planet_metrics
+from analysis.classification import classify_planet
+from analysis.dataset import load_planets
 from analysis.scenarios import SCENARIOS
 from analysis.scoring import score_scenario
 
@@ -12,22 +13,26 @@ if not files:
     raise SystemExit("data klasöründe PS_*.csv bulunamadı.")
 
 results = []
-with files[0].open("r", encoding="utf-8-sig", newline="") as source:
-    lines = (line for line in source if line.strip() and not line.lstrip().startswith("#"))
-    for row in csv.DictReader(lines):
-        if row.get("default_flag") not in ("", "1") or row.get("pl_controv_flag") == "1":
-            continue
-        metrics, flux_estimated, temp_estimated = derive_planet_metrics(row)
-        record = {"Gezegen": row.get("pl_name", ""), "Yıldız sistemi": row.get("hostname", "")}
-        for scenario_id, scenario in SCENARIOS.items():
-            result = score_scenario(metrics, scenario_id)
-            record[f"{scenario['name']} skoru"] = result["score"]
-            record[f"{scenario['name']} veri kapsamı (%)"] = result["coverage"]
-        record["Yıldız enerjisi tahmini"] = "Evet" if flux_estimated else "Hayır"
-        record["Sıcaklık tahmini"] = "Evet" if temp_estimated else "Hayır"
-        results.append(record)
+for item in load_planets().values():
+    metrics = item["metrics"]
+    record = {
+        "Gezegen": item["name"],
+        "Yıldız sistemi": item["host"],
+        "Boyut sınıfı": classify_planet(metrics.get("radius"), metrics.get("mass"))["label"],
+        "Doğrulama durumu": "Tartışmalı" if item["contested"] else "İşaretli değil",
+    }
+    for scenario_id, scenario in SCENARIOS.items():
+        result = score_scenario(metrics, scenario_id)
+        record[f"{scenario['name']} skoru"] = result["score"]
+        record[f"{scenario['name']} olası üst sınır"] = result["score_max"]
+        record[f"{scenario['name']} veri kapsamı (%)"] = result["coverage"]
+    record["Yıldız enerjisi tahmini"] = "Evet" if item["flux_estimated"] else "Hayır"
+    record["Sıcaklık tahmini"] = "Evet" if item["temp_estimated"] else "Hayır"
+    record["Yüzey sıcaklığı PHL modeli"] = "Evet" if item.get("temp_modeled") else "Hayır"
+    results.append(record)
 
-results.sort(key=lambda row: (row["Yüzey yerleşimi skoru"] is None, -(row["Yüzey yerleşimi skoru"] or 0)))
+surface_score_field = f"{SCENARIOS['surface']['name']} skoru"
+results.sort(key=lambda row: (row[surface_score_field] is None, -(row[surface_score_field] or 0)))
 output = ROOT / "data" / "colony_scenarios.csv"
 with output.open("w", encoding="utf-8-sig", newline="") as destination:
     fields = list(results[0]) if results else ["Gezegen", "Yıldız sistemi"]
