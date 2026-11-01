@@ -4,19 +4,44 @@ from functools import lru_cache
 from pathlib import Path
 
 from flask import Flask, jsonify, redirect, request, send_from_directory
-from analysis.classification import classify_planet
+from werkzeug.exceptions import HTTPException
+from analysis.classification import classify_metrics
+from analysis.consistency import esi_consistency
 from analysis.data_sources import scenario_data_sources
 from analysis.dataset import load_planets as load_nasa_planets
+from analysis.methodology import scenario_methodology
 from analysis.metrics import number
 from analysis.phl_catalog import load_phl_catalog, phl_comparison, ranked_phl_candidates, PHL_SOURCE
 from analysis.scenarios import SCENARIOS
 from analysis.scoring import score_scenario
+from analysis.sensitivity import criterion_rows, weight_sensitivity
 from analysis.surface_options import build_surface_options
 
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 app = Flask(__name__, static_folder=None)
 
+
+# /api/ altındaki 404, 400 gibi hataları HTML sayfası yerine JSON olarak döndürür;
+# arayüz her zaman {"error": ...} biçiminde okuyabilsin.
+@app.errorhandler(HTTPException)
+def handle_http_error(error):
+    if request.path.startswith("/api/"):
+        return jsonify({"error": error.description}), error.code
+    return error
+
+
+# Kodda beklenmeyen bir hata olursa ayrıntısını sunucu günlüğüne yazar,
+# kullanıcıya iç bilgi sızdırmadan genel bir mesaj gösterir.
+@app.errorhandler(Exception)
+def api_unexpected_error(error):
+    if request.path.startswith("/api/"):
+        app.logger.exception("Unhandled API error")
+        return jsonify({"error": "Sunucu analiz sırasında beklenmeyen bir hata verdi."}), 500
+    return "Internal Server Error", 500
+
+# Güneş Sistemi cisimlerinin bilinen yüzey basıncı ve atmosfer özeti (proje verisi).
+# Kubbe senaryosundaki basınç ve atmosfer ölçütleri buradan gelir.
 SOLAR_SURFACE_ENVIRONMENT = {
     "merkür": {
         "surface_pressure_bar": 0,
@@ -45,6 +70,8 @@ SOLAR_SURFACE_ENVIRONMENT = {
     },
 }
 
+# Güneş Sistemi cisimleri: (ad, yarıçap km, yüzey sıcaklığı °C, yerçekimi m/s², Güneş'e uzaklık AU).
+# Jüpiter ve Satürn'ün katı yüzeyi olmadığı için sıcaklık None.
 SOLAR_RANKING_BODIES = [
     ("Merkür", 2440, 167, 3.70, 0.387),
     ("Venüs", 6052, 464, 8.87, 0.723),
@@ -59,11 +86,16 @@ SOLAR_RANKING_BODIES = [
 ]
 
 
+# Ana adrese (/) gelen kullanıcıyı çalışma alanı sayfasına yönlendirir.
 @app.get("/")
 def home():
     return redirect("/index/workspace.html")
 
 
+# Tek bir gök cisminin tam analizini döndürür (sistem görünümündeki analiz kartı bunu kullanır).
+# 1) Güneş Sistemi ise ölçümleri _solar_ranking_entries'ten, değilse NASA CSV'sinden alır.
+# 2) Üç senaryoyu score_scenario ile puanlar.
+# 3) Kaynak kartları, yüzey seçenekleri, PHL karşılaştırması ve ağırlık gerekçelerini ekleyip JSON döndürür.
 @app.get("/api/analyze")
 def analyze():
     host = request.args.get("host", "")
@@ -71,6 +103,8 @@ def analyze():
     estimated = []
     contested = False
 
+    # Güneş Sistemi: arayüzden gelen değerler varsa birimleri dönüştürülür
+    # (km → Dünya yarıçapı, m/s² → g, AU → akı = 1/AU², °C → K).
     if host.casefold() == "güneş sistemi":
         radius_km = number(request.args.get("radius"))
         temperature_c = number(request.args.get("temperature"))
@@ -108,7 +142,7 @@ def analyze():
         if item["temp_estimated"]:
             estimated.append("Denge sıcaklığı, Dünya benzeri yansıtıcılık varsayımıyla tahmin edildi")
         if item.get("temp_modeled"):
-            estimated.append("PHL model sıcaklığı (Dünya benzeri atmosfer varsayımı) yalnızca bilgi amaçlı; ölçüm değildir ve skora katılmadı")
+            estimated.append("PHL model sıcaklığı (Dünya benzeri atmosfer varsayımı) ölçüm puanına katılmadı; yalnızca varsayımsal modelde kullanılır")
         source = "NASA Exoplanet Archive CSV dosyası"
 
     scenarios = [score_scenario(metrics, scenario_id) for scenario_id in SCENARIOS]
@@ -125,21 +159,25 @@ def analyze():
     return jsonify({
         "planet": planet_name, "contested": contested,
         "phl_comparison": phl_comparison(planet_name, "solar" if host.casefold() == "güneş sistemi" else "exoplanet"),
-        "planet_class": classify_planet(metrics.get("radius"), metrics.get("mass")),
+        "planet_class": classify_metrics(metrics),
         "metrics": metrics, "scenarios": scenarios, "surface_options": surface_options,
         "data_sources": data_sources,
+        # Why each weight has its value; a report (human or AI) must cite this, not invent reasons.
+        "methodology": {scenario_id: scenario_methodology(scenario_id) for scenario_id in SCENARIOS},
         "estimated": estimated, "source": source,
         "note": "Skor; NASA arşivindeki ölçümlerden ve analiz/scenarios.py dosyasındaki senaryo ağırlıklarından hesaplanan bir ön eleme endeksidir; olasılık veya koloni başarısı tahmini değildir. Eksik ölçütler veri kapsamını düşürür ve bilinmeyen değerler puanlanmaz. NASA kaynak kartları ek ölçüm ve modelleri gösterir; kapsamı gezegen geneline taşınamayan veriler skora otomatik katılmaz."
     })
 
 
+# Senaryo sıralaması: parametreleri doğrular, önbellekteki sıralı listeyi alır,
+# arama ve gök cismi grubu (Güneş Sistemi / ötegezegen) filtresini uygular, ilk 'limit' kayda PHL bilgisini ekler.
 @app.get("/api/rankings")
 def rankings():
     scenario_id = request.args.get("scenario", "surface")
     if scenario_id not in SCENARIOS:
         return jsonify({"error": "Geçersiz senaryo."}), 400
     try:
-        min_coverage = max(0, min(100, int(request.args.get("min_coverage", "30"))))
+        min_coverage = max(0, min(100, int(request.args.get("min_coverage", "0"))))
         limit = max(1, min(200, int(request.args.get("limit", "100"))))
     except ValueError:
         return jsonify({"error": "Kapsam ve sonuç sayısı sayısal olmalıdır."}), 400
@@ -171,6 +209,8 @@ def rankings():
     })
 
 
+# PHL'nin konservatif (sınıf 1) ve iyimser (sınıf 2) adaylarını, sınıf içinde ESI'ye göre sıralı döndürür.
+# hwc.csv yoksa 'available: false' döner.
 @app.get("/api/phl-candidates")
 def phl_candidates():
     query = request.args.get("q", "").strip().casefold()
@@ -203,6 +243,83 @@ def phl_candidates():
     })
 
 
+# Veri ve yöntem sayfasındaki ESI grafiği için: seçilen senaryoda proje puanı ile PHL ESI'yi
+# eşleştirir ve Spearman sıra korelasyonunu döndürür.
+@app.get("/api/esi-consistency")
+def esi_consistency_check():
+    scenario_id = request.args.get("scenario", "surface")
+    if scenario_id not in SCENARIOS:
+        return jsonify({"error": "Geçersiz senaryo."}), 400
+    try:
+        result = _esi_consistency(scenario_id)
+    except (FileNotFoundError, OSError, ValueError) as error:
+        return jsonify({"error": str(error)}), 500
+    if result is None:
+        return jsonify({
+            "available": False,
+            "message": "PHL CSV dosyası bulunamadı.",
+            "source_url": PHL_SOURCE,
+            "expected_file": "data/hwc.csv",
+        })
+    return jsonify({
+        "available": True,
+        **result,
+        "source_url": PHL_SOURCE,
+        "note": "ESI, Dünya benzerliğini ölçer; proje puanı senaryo ölçütlerine göre ön elemedir. Karşılaştırma doğrulama değil, genel bir tutarlılık kontrolüdür. Kapsamı %0 olan gezegenler dahil edilmez.",
+    })
+
+
+# Hesap ağır olduğu için senaryo başına bir kez yapılıp bellekte tutulur (lru_cache). PHL dosyası yoksa None.
+@lru_cache(maxsize=3)
+def _esi_consistency(scenario_id):
+    catalog = load_phl_catalog()
+    if catalog is None:
+        return None
+    return esi_consistency(load_nasa_planets(), catalog, scenario_id)
+
+
+# Senaryonun her ağırlığını gerekçesi ve kaynağıyla döndürür (Veri ve yöntem sayfası, ileride AI raporu).
+@app.get("/api/methodology")
+def methodology():
+    scenario_id = request.args.get("scenario", "surface")
+    if scenario_id not in SCENARIOS:
+        return jsonify({"error": "Geçersiz senaryo."}), 400
+    return jsonify(scenario_methodology(scenario_id))
+
+
+# Duyarlılık analizinde ağırlıkların ne kadar oynatılacağı: '20' → ±%20, '50' → ±%50.
+SENSITIVITY_SPREADS = {"20": 0.2, "50": 0.5}
+
+
+# Ağırlık duyarlılık analizi: ağırlıklar rastgele değiştirildiğinde sıralamanın ne kadar korunduğunu döndürür.
+@app.get("/api/weight-sensitivity")
+def weight_sensitivity_check():
+    scenario_id = request.args.get("scenario", "surface")
+    if scenario_id not in SCENARIOS:
+        return jsonify({"error": "Geçersiz senaryo."}), 400
+    spread_key = request.args.get("spread", "20")
+    if spread_key not in SENSITIVITY_SPREADS:
+        return jsonify({"error": "Değişim oranı 20 veya 50 olmalıdır."}), 400
+    try:
+        result = _weight_sensitivity(scenario_id, spread_key)
+    except (FileNotFoundError, OSError) as error:
+        return jsonify({"error": str(error)}), 500
+    return jsonify({
+        **result,
+        "note": "Her ağırlık rastgele bir katsayıyla çarpılıp (sabit tohum, tekrarlanabilir) sıralama yeniden hesaplandı. Yalnızca kapsamı %0'dan büyük cisimler dahildir. Ötegezegenlerin çoğunda aynı ölçütler eksik olduğundan, bu ölçütlerin ağırlığını değiştirmek onların puanını birlikte kaydırır ama aralarındaki sırayı değiştirmez; yüksek kararlılığın bir kısmı bu eksik veriden gelir.",
+    })
+
+
+# Güneş Sistemi + tüm ötegezegenler için analizi çalıştırır; ilk seferde birkaç saniye sürer, sonra bellekten gelir.
+@lru_cache(maxsize=6)
+def _weight_sensitivity(scenario_id, spread_key):
+    records = list(_solar_ranking_entries())
+    records.extend((item["host"], item["name"], item["metrics"]) for item in load_nasa_planets().values())
+    return weight_sensitivity(criterion_rows(records, scenario_id), scenario_id, spread=SENSITIVITY_SPREADS[spread_key])
+
+
+# Yaşam destek ve mühendislik sayfalarındaki hedef listesi. Güneş Sistemi cisimleri için Dünya'nın
+# yörüngesine göre uzaklık hesaplanır (|a − 1| AU → ışık yılı); liste yakından uzağa sıralanır.
 @app.get("/api/destinations")
 def destinations():
     """Return Solar System targets and nearby catalogued exoplanets for mission planning."""
@@ -227,7 +344,7 @@ def destinations():
             distance_ly = abs(orbit_au - 1) * au_in_light_years if orbit_au is not None else None
         results.append({
             "host": host, "planet": name, "distance_ly": distance_ly,
-            "orbit_au": orbit_au, "destination_type": "solar-system",
+            "orbit_au": orbit_au, "insolation": flux, "destination_type": "solar-system",
         })
 
     try:
@@ -239,6 +356,7 @@ def destinations():
             "host": item["host"], "planet": item["name"],
             "distance_ly": item["metrics"].get("access"),
             "orbit_au": number(item.get("pl_orbsmax")),
+            "insolation": item["metrics"].get("insolation"),
             "contested": item["contested"],
             "destination_type": "exoplanet",
         })
@@ -260,6 +378,8 @@ def destinations():
     return jsonify({"results": limited_results, "result_count": len(results)})
 
 
+# Yıldız haritası (main.js) için tüm cisimlerin kubbe puanını tek seferde döndürür.
+# Puan JavaScript'te tekrar hesaplanmaz; tek doğruluk kaynağı Python'dur.
 @app.get("/api/map-scores")
 def map_scores():
     """Single Python-produced source for the score and indicators shown on the star map."""
@@ -283,9 +403,11 @@ def map_scores():
         results.append({
             "host": item["host"], "planet": item["planet"],
             "population": item["population"], "contested": item["contested"],
-            "score": scenario["score"], "score_max": scenario["score_max"],
-            "coverage": scenario["coverage"],
-            "planet_class": classify_planet(item["metrics"].get("radius"), item["metrics"].get("mass")),
+            "score": scenario["score"], "score_min": scenario["score_min"], "score_max": scenario["score_max"],
+            "coverage": scenario["coverage"], "score_status": scenario["score_status"],
+            "planet_class": classify_metrics(item["metrics"]),
+            "applicable": scenario["applicable"],
+            "applicability_note": scenario["applicability_note"],
             "indicators": scenario["indicators"],
             "critical_checks": scenario["critical_checks"],
             "flux_estimated": item["flux_estimated"], "temp_estimated": item["temp_estimated"],
@@ -298,6 +420,9 @@ def map_scores():
     return jsonify({"results": results})
 
 
+# 'Kendi gezegenini tasarla' formu. Her alanı tür ve aralık kontrolünden geçirir, birimleri dönüştürür
+# (°C → K) ve değerleri 'user' kaynağıyla işaretler. Bu yüzden kullanıcı girdileri ana puana değil
+# varsayımsal modele girer.
 @app.post("/api/custom-planet/analyze")
 def analyze_custom_planet():
     payload = request.get_json(silent=True)
@@ -312,6 +437,7 @@ def analyze_custom_planet():
         "access": None, "radiation": None, "water": None,
         "geothermal": None, "geology": None, "provenance": {},
     }
+    # form alanı: (ölçüt anahtarı, en küçük, en büyük, eklenecek sabit, kaynak etiketi)
     input_fields = {
         "temperature_c": ("temperature", -273.15, 10000, 273.15, "Yüzey sıcaklığı (°C) kullanıcı girdisi"),
         "radius_earth": ("radius", 0.001, 1000, 0, "Yarıçap (Dünya = 1) kullanıcı girdisi"),
@@ -358,6 +484,9 @@ def analyze_custom_planet():
     })
 
 
+# Sıralamanın asıl hesabı: tüm cisimleri puanlar, puanı olmayanları ve istenen kapsamın altındakileri eler,
+# her kayda en güçlü 2 ölçütü ve eksik ölçütleri ekler, önce puana sonra kapsama göre büyükten küçüğe sıralar.
+# lru_cache: aynı senaryo/kapsam için sonuç bellekte tutulur, 6.000+ gezegen her aramada yeniden hesaplanmaz.
 @lru_cache(maxsize=9)
 def _ranked_planets(scenario_id, min_coverage):
     records = [
@@ -381,10 +510,11 @@ def _ranked_planets(scenario_id, min_coverage):
         ranked.append({
             "host": host, "planet": name,
             "population": record["population"], "contested": record["contested"],
-            "score": scenario["score"], "score_max": scenario["score_max"],
+            "score": scenario["score"], "score_min": scenario["score_min"], "score_max": scenario["score_max"],
             "coverage": scenario["coverage"], "scope_note": scenario["scope_note"],
             "confidence": scenario["confidence"], "status": scenario["status"],
-            "planet_class": classify_planet(metrics.get("radius"), metrics.get("mass"))["label"],
+            "applicability_note": scenario["applicability_note"],
+            "planet_class": classify_metrics(metrics)["label"],
             "strengths": [{"name": item["name"], "score": item["score"]} for item in strengths],
             "missing": gaps,
         })
@@ -392,6 +522,8 @@ def _ranked_planets(scenario_id, min_coverage):
     return tuple(ranked)
 
 
+# SOLAR_RANKING_BODIES tablosunu ortak ölçüm sözlüğüne çevirir: km → Dünya yarıçapı, m/s² → g,
+# AU → akı (1/AU²), °C → K. Her değerin kaynağı 'project' (projede kayıtlı) veya 'derived' (formülle) olarak işaretlenir.
 def _solar_ranking_entries():
     entries = []
     for name, radius_km, temperature_c, gravity_ms, au in SOLAR_RANKING_BODIES:
@@ -422,12 +554,15 @@ def _solar_ranking_entries():
     return entries
 
 
+# Statik dosya sunar; yalnızca izin verilen uzantılara izin verir.
+# send_from_directory klasör dışına çıkmayı (../) engeller.
 def serve(folder, filename, allowed_extensions):
     if Path(filename).suffix.lower() not in allowed_extensions:
         return "Dosya türüne izin verilmiyor.", 404
     return send_from_directory(ROOT / folder, filename)
 
 
+# Aşağıdaki beş rota her klasör için serve()'ü çağırır: HTML, CSS, JS, CSV ve görseller.
 @app.get("/index/<path:filename>")
 def index_files(filename):
     return serve("index", filename, {".html"})
@@ -453,5 +588,6 @@ def asset_files(filename):
     return serve("assets", filename, {".jpg", ".jpeg", ".png", ".webp"})
 
 
+# Sunucuyu başlatır: python app.py → http://127.0.0.1:5000 (EDENSTAR_DEBUG=1 ise hata ayıklama modu).
 if __name__ == "__main__":
-    app.run(debug=os.environ.get("EXOHABITAT_DEBUG") == "1", host="127.0.0.1", port=5000)
+    app.run(debug=os.environ.get("EDENSTAR_DEBUG") == "1", host="127.0.0.1", port=5000)

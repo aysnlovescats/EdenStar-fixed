@@ -1,5 +1,7 @@
 """Scenario-specific planetary data sources and their measurement scope."""
 
+# Senaryo ve cisme göre gösterilecek veri kaynağı kartları (NASA veri setleri, görev ölçümleri, PHL modeli).
+# Bilgi içindir; puana girmez.
 DATA_SOURCES = [
     {
         "id": "exoplanet-archive",
@@ -145,6 +147,8 @@ DATA_SOURCES = [
 ]
 
 
+# Seçilen cisim ve senaryo için uygun kaynak kartlarını süzer: ötegezegenlere yalnızca genel ('*') ve
+# ötegezegen kaynakları, Güneş Sistemi cisimlerine o cisme ait kaynaklar gösterilir.
 def scenario_data_sources(host, planet_name, scenario_id):
     """Return applicable references without implying their values are global or scored."""
     if host.casefold() == "güneş sistemi":

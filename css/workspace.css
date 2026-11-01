@@ -41,6 +41,9 @@
 .engineering-calculator-output strong{color:var(--gold);font-size:14px;font-weight:500}
 .engineering-calculator-output span{display:grid;gap:3px}
 .engineering-assumption-note{color:#8d8170;font-size:8px;line-height:1.5}
+.engineering-heat-block{display:grid;gap:10px;padding-top:13px;border-top:1px solid rgba(115,170,202,.12)}
+.engineering-heat-block>div:first-child p{margin:5px 0 0;color:#8799a4;font-size:9px;line-height:1.5}
+.engineering-heat-inputs{margin-top:2px}
 .engineering-card{min-width:0;padding:0;border:1px solid var(--line);border-radius:8px;background:linear-gradient(145deg,rgba(15,27,39,.9),rgba(8,15,23,.92))}
 .engineering-card[open]{border-color:rgba(110,178,216,.32)}
 .engineering-card summary{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 12px;padding:15px;cursor:pointer;list-style:none}
@@ -132,3 +135,19 @@
 .phl-candidate-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .phl-candidate-facts span{color:#a1b1bb;font-size:8px;line-height:1.4}
 .phl-candidate-zones{margin:11px 0 0;padding-top:8px;border-top:1px solid rgba(115,170,202,.1);color:#8297a4;font-size:8px;line-height:1.5}
+
+/* Keep catalog and scenario-comparison names readable inside compact cards. */
+.planet-card header{grid-template-columns:36px minmax(0,1fr) minmax(58px,82px);gap:10px}
+.planet-name h3{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere;line-height:1.35;text-overflow:clip;white-space:normal}
+.planet-name p{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:normal;word-break:normal;line-height:1.4}
+.score-pill{min-width:0;max-width:82px;white-space:normal}
+.score-pill small{line-height:1.35;overflow-wrap:anywhere}
+.comparison-card header{align-items:flex-start;min-width:0}
+.comparison-card header h3{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.35}
+.comparison-card .compare-score{flex:0 0 min(44%,155px);min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+.comparison-card .compare-score small{line-height:1.4;overflow-wrap:anywhere}
+.model-assumptions{margin:8px 0;font-size:12px;line-height:1.5}
+.model-assumptions summary{cursor:pointer;color:#83cfff}
+.model-assumptions ul{margin:7px 0;padding-left:18px;color:#a9bdca}
+.model-assumptions>small{display:block;color:#8da2b0}
+.no-data-badge{display:inline-block;padding:2px 5px;border:1px solid rgba(255,195,91,.35);border-radius:4px;background:rgba(255,195,91,.08);color:#ffd27f;font-size:7px;font-style:normal;font-weight:700;letter-spacing:.08em;vertical-align:1px}

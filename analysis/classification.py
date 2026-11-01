@@ -1,8 +1,21 @@
 """Planet composition and surface-colonization feasibility classification."""
 
 
+# Kural tabanlı sınıflandırma; yukarıdan aşağı ilk uyan sınıf döner:
+# veri yok → sınıflandırılamadı; R ≥ 2,5 veya M ≥ 15 → gaz/buz devi (yüzey ve yer altı puanı verilmez);
+# ölçülmüş yüzey ≥ 800 K → aşırı sıcak; R > 1,6 veya M > 5 → süper-Dünya/mini-Neptün (%15 ihtiyat payı);
+# diğer → kayalık aday.
 def classify_planet(radius_earth, mass_earth, density_earth=None, temperature_k=None):
     """Classify planet and determine whether surface/underground scenarios apply."""
+    if radius_earth is None and mass_earth is None:
+        return {
+            "kind": "unknown",
+            "label": "Sınıflandırılamadı",
+            "surface_applicable": None,
+            "underground_applicable": None,
+            "reason": "Yarıçap veya kütle verisi yok; gezegen türü bilinmiyor.",
+        }
+
     # 1. Kesin Gaz / Buz Devi Sınırları (Yarıçap >= 2.5 R_E veya Kütle >= 15 M_E veya çok düşük yoğunluk)
     if (radius_earth is not None and radius_earth >= 2.5) or \
        (mass_earth is not None and mass_earth >= 15.0) or \
@@ -15,14 +28,14 @@ def classify_planet(radius_earth, mass_earth, density_earth=None, temperature_k=
             "reason": "Yarıçap, kütle veya düşük yoğunluk değeri gezegenin kalın bir gaz/buz zarfına sahip olduğunu gösteriyor; yalnızca yörünge istasyonu kurulabilir.",
         }
 
-    # 2. Aşırı Sıcak Lav / Magma Okyanusu Gezegenleri (T > 800 K)
+    # High heat warns about habitat load; it does not establish molten rock.
     if temperature_k is not None and temperature_k >= 800:
         return {
-            "kind": "lava_world",
-            "label": "Aşırı Sıcak / Lav Gezegeni",
-            "surface_applicable": False,
-            "underground_applicable": False,
-            "reason": f"Denge sıcaklığı ({round(temperature_k)} K) kayaç erime ve yaşam destek sınırlarının çok üzerinde; yüzey veya yer altı yerleşimi kurulamaz.",
+            "kind": "extreme_heat",
+            "label": "Aşırı Sıcak Yüzey",
+            "surface_applicable": True,
+            "underground_applicable": True,
+            "reason": f"Ölçülmüş yüzey sıcaklığı ({round(temperature_k)} K) çok yüksek ısı kontrolü ve habitat yükü gerektirir; bu eşik kayaç erimesi iddiası değildir.",
         }
 
     # 3. Geçiş Bölgesi (Sub-Neptune / Mini-Neptün veya Süper-Dünya: 1.6 < R < 2.5)
@@ -33,7 +46,7 @@ def classify_planet(radius_earth, mass_earth, density_earth=None, temperature_k=
             "surface_applicable": True,
             "underground_applicable": True,
             "penalty": 0.85,  # Kalın atmosfer / yüksek basınç riski cezası
-            "reason": "1.6–2.5 Dünya yarıçapı aralığındaki gezegenler yüksek basınçlı kalın atmosfer veya okyanus tabakası barındırabilir; yüzey/yer altı puanına %15 ihtiyat payı uygulanır.",
+            "reason": "Yarıçapı 1.6–2.5 Dünya veya kütlesi 5–15 Dünya aralığındaki gezegenler kalın atmosfer ya da okyanus tabakası barındırabilir; yüzey/yer altı puanına %15 ihtiyat payı uygulanır.",
         }
 
     # 4. Kayalık / Karasal Aday
@@ -45,3 +58,27 @@ def classify_planet(radius_earth, mass_earth, density_earth=None, temperature_k=
         "penalty": 1.0,
         "reason": "Boyut ve kütle parametreleri katı kabuklu karasal gezegen/uydu modeliyle uyumludur.",
     }
+
+
+# Sınıflandırmadan önce kaynakları süzer: yalnızca NASA/proje kaynaklı yarıçap ve kütle,
+# yalnızca ölçülmüş yüzey sıcaklığı kullanılır. Tahmini bir kütleyle gezegeni 'gaz devi' ilan etmemek için.
+def classify_metrics(metrics):
+    """Classify using available properties, never treating equilibrium heat as surface heat."""
+    provenance = metrics.get("provenance", {})
+    # Classification should not turn an inferred mass/radius into a physical fact.
+    # Only use catalog/project inputs here; derived density is usable only when both
+    # of its inputs are catalog/project values.
+    radius_source = (provenance.get("radius") or {}).get("kind")
+    mass_source = (provenance.get("mass") or {}).get("kind")
+    radius = metrics.get("radius") if radius_source in ("archive", "project") else None
+    mass = metrics.get("mass") if mass_source in ("archive", "project") else None
+    density = metrics.get("density") if radius is not None and mass is not None else None
+    source_kind = (metrics.get("provenance", {}).get("temperature") or {}).get("kind")
+    temperature = (
+        metrics.get("temperature")
+        if metrics.get("temperature_kind") == "surface" and source_kind != "user"
+        else None
+    )
+    return classify_planet(
+        radius, mass, density, temperature,
+    )

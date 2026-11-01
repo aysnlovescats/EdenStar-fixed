@@ -1,1 +1,1 @@
-"""ExoHabitat colony scoring modules."""
+"""EdenStar colony scoring modules."""

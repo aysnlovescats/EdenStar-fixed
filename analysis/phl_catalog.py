@@ -10,11 +10,14 @@ PHL_FILE = Path(__file__).resolve().parent.parent / "data" / "hwc.csv"
 PHL_SOURCE = "https://phl.upr.edu/hwc/data"
 
 
+# Adı eşleştirmeye uygun hale getirir: küçük harf, harf/rakam dışı karakterler boşluk.
+# 'Kepler-22 b' → 'kepler 22 b'. Böylece NASA ve PHL adları eşleşir.
 def normalize_planet_name(value):
     value = (value or "").casefold().replace("’", "'")
     return " ".join(re.sub(r"[^a-z0-9]+", " ", value).split())
 
 
+# data/hwc.csv varsa okur (dosyanın değişme zamanına göre önbellekli), yoksa None döndürür.
 def load_phl_catalog():
     """Return HWC rows keyed by normalized name and known alternate names."""
     if not PHL_FILE.is_file():
@@ -22,6 +25,8 @@ def load_phl_catalog():
     return _read_phl_catalog(PHL_FILE.stat().st_mtime_ns)
 
 
+# PHL CSV'sini satır satır okuyup gerekli sütunları sayıya çevirir;
+# gezegeni hem kendi adıyla hem alternatif adlarıyla sözlüğe koyar.
 @lru_cache(maxsize=2)
 def _read_phl_catalog(_modified_at):
     catalog = {}
@@ -62,6 +67,7 @@ def _read_phl_catalog(_modified_at):
     return catalog
 
 
+# Bir gezegenin PHL kaydını özetler: aday durumu (1 konservatif, 2 iyimser), ESI, yaşanabilir bölge bilgisi ve uyarı notu.
 def phl_summary(planet_name, catalog):
     """Convert one matched HWC row into a cautious, UI-ready summary."""
     item = catalog.get(normalize_planet_name(planet_name))
@@ -95,6 +101,8 @@ def phl_summary(planet_name, catalog):
     }
 
 
+# Arayüz için güvenli PHL bilgisi: Güneş Sistemi için 'uygulanamaz', dosya yok veya okunamıyorsa
+# hata nesnesi döner; arayüz hiçbir durumda çökmez.
 def phl_comparison(planet_name, population="exoplanet"):
     """Return a safe UI payload even when the optional PHL CSV is not installed."""
     if population != "exoplanet":
@@ -123,6 +131,7 @@ def phl_comparison(planet_name, population="exoplanet"):
     return {"available": True, **phl_summary(planet_name, catalog), "source_url": PHL_SOURCE}
 
 
+# Adayları tekilleştirir; önce sınıfa (1, 2), sonra ESI'ye (büyükten küçüğe), sonra ada göre sıralar.
 def ranked_phl_candidates(catalog):
     """Return unique PHL candidates, grouped by class and ordered by ESI within each class."""
     unique = {item["name"]: item for item in catalog.values()}

@@ -1,0 +1,290 @@
+/* Reversible visual layer: keep the existing page structure and interactions. */
+:root {
+  --bg: #050912;
+  --panel: #0a1420;
+  --panel-hi: #101d2b;
+  --line: rgba(103, 174, 214, .22);
+  --text: #e9f3f8;
+  --muted: #91a8b7;
+  --blue: #78d6f1;
+  --gold: #ffc66a;
+  --green: #78dbb1;
+  --red: #ff8e88;
+  --violet: #9b8cff;
+}
+
+body.workspace-body {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(90deg, rgba(3, 8, 16, .86) 0%, rgba(3, 8, 16, .7) 37%, rgba(3, 8, 16, .48) 100%),
+    linear-gradient(180deg, rgba(3, 8, 16, .42), rgba(3, 8, 16, .74)),
+    url("../assets/space-earth-bg.png"),
+    radial-gradient(ellipse at 78% 7%, rgba(30, 97, 139, .23), transparent 29rem),
+    radial-gradient(ellipse at 18% 43%, rgba(66, 54, 132, .105), transparent 34rem);
+  background-position: center, center, center, center, center;
+  background-size: cover;
+  background-attachment: fixed;
+  font-family: "Segoe UI Variable", "Bahnschrift", "Segoe UI", Arial, sans-serif;
+}
+
+body.workspace-body::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: .34;
+  background-image:
+    radial-gradient(1px 1px at 7% 13%, rgba(203, 231, 255, .68) 98%, transparent),
+    radial-gradient(1px 1px at 26% 74%, rgba(137, 201, 239, .56) 98%, transparent),
+    radial-gradient(1.2px 1.2px at 53% 22%, rgba(212, 225, 255, .62) 98%, transparent),
+    radial-gradient(1px 1px at 81% 58%, rgba(145, 205, 239, .52) 98%, transparent),
+    radial-gradient(1px 1px at 94% 31%, rgba(218, 231, 255, .56) 98%, transparent);
+}
+
+/* Each workspace section gets its own darkened planetary backdrop. */
+body.workspace-body[data-page="catalog"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .9), rgba(3, 8, 16, .61)), linear-gradient(180deg, rgba(3, 8, 16, .3), rgba(3, 8, 16, .74)), url("../assets/catalog-planets.png");
+  background-position: center, center, 58% center;
+}
+body.workspace-body[data-page="phl-ranking"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .91), rgba(3, 8, 16, .58)), linear-gradient(180deg, rgba(3, 8, 16, .28), rgba(3, 8, 16, .75)), url("../assets/phl-exoplanet.png");
+  background-position: center, center, 60% center;
+}
+body.workspace-body[data-page="rankings"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .91), rgba(3, 8, 16, .57)), linear-gradient(180deg, rgba(3, 8, 16, .3), rgba(3, 8, 16, .76)), url("../assets/rankings-gas-giant.png");
+  background-position: center, center, 65% center;
+}
+body.workspace-body[data-page="scenarios"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .92), rgba(3, 8, 16, .61)), linear-gradient(180deg, rgba(3, 8, 16, .28), rgba(3, 8, 16, .76)), url("../assets/scenario-icy-moon.png");
+  background-position: center, center, 70% center;
+}
+body.workspace-body[data-page="custom-planet"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .91), rgba(3, 8, 16, .58)), linear-gradient(180deg, rgba(3, 8, 16, .3), rgba(3, 8, 16, .76)), url("../assets/custom-nebula.png");
+  background-position: center, center, 68% center;
+}
+body.workspace-body[data-page="comparison"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .91), rgba(3, 8, 16, .57)), linear-gradient(180deg, rgba(3, 8, 16, .3), rgba(3, 8, 16, .76)), url("../assets/comparison-worlds.png");
+  background-position: center, center, 65% center;
+}
+body.workspace-body[data-page="life-support"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .91), rgba(3, 8, 16, .57)), linear-gradient(180deg, rgba(3, 8, 16, .3), rgba(3, 8, 16, .76)), url("../assets/life-support-earthrise.png");
+  background-position: center, center, 62% center;
+}
+body.workspace-body[data-page="engineering"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .91), rgba(3, 8, 16, .56)), linear-gradient(180deg, rgba(3, 8, 16, .28), rgba(3, 8, 16, .78)), url("../assets/engineering-mars.png");
+  background-position: center, center, 64% center;
+}
+body.workspace-body[data-page="method"] {
+  background-image: linear-gradient(90deg, rgba(3, 8, 16, .92), rgba(3, 8, 16, .59)), linear-gradient(180deg, rgba(3, 8, 16, .28), rgba(3, 8, 16, .76)), url("../assets/method-space.png");
+  background-position: center, center, 64% center;
+}
+
+.workspace-shell { position: relative; z-index: 2; }
+.space-effects {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.space-dust {
+  position: absolute;
+  width: var(--dust-size, 2px);
+  height: var(--dust-size, 2px);
+  left: var(--dust-x);
+  top: var(--dust-y);
+  border-radius: 50%;
+  background: rgba(185, 224, 255, .8);
+  box-shadow: 0 0 9px 2px rgba(103, 188, 245, .28);
+  opacity: .18;
+  animation: dust-drift var(--dust-time, 18s) ease-in-out infinite alternate;
+}
+.dust-1 { --dust-x: 16%; --dust-y: 28%; --dust-size: 2px; --dust-time: 17s; }
+.dust-2 { --dust-x: 29%; --dust-y: 78%; --dust-size: 3px; --dust-time: 23s; animation-delay: -8s; }
+.dust-3 { --dust-x: 48%; --dust-y: 19%; --dust-size: 2px; --dust-time: 21s; animation-delay: -12s; }
+.dust-4 { --dust-x: 68%; --dust-y: 68%; --dust-size: 2px; --dust-time: 26s; animation-delay: -6s; }
+.dust-5 { --dust-x: 86%; --dust-y: 24%; --dust-size: 3px; --dust-time: 19s; animation-delay: -10s; }
+.dust-6 { --dust-x: 91%; --dust-y: 83%; --dust-size: 2px; --dust-time: 24s; animation-delay: -4s; }
+.dust-7 { --dust-x: 38%; --dust-y: 51%; --dust-size: 2px; --dust-time: 22s; animation-delay: -14s; }
+.dust-8 { --dust-x: 75%; --dust-y: 43%; --dust-size: 2px; --dust-time: 20s; animation-delay: -3s; }
+.shooting-star {
+  position: absolute;
+  top: -8%;
+  left: 38%;
+  width: 1px;
+  height: clamp(55px, 9vh, 110px);
+  opacity: 0;
+  transform: rotate(42deg);
+  transform-origin: top;
+  background: linear-gradient(180deg, rgba(185, 228, 255, .85), rgba(106, 188, 255, .3) 32%, transparent);
+  filter: drop-shadow(0 0 5px rgba(117, 198, 255, .65));
+  animation: meteor-fall 13s linear infinite;
+}
+.shooting-star-2 { left: 72%; animation-delay: 6.5s; animation-duration: 17s; }
+@keyframes dust-drift {
+  from { opacity: .08; transform: translate3d(-5px, 4px, 0); }
+  to { opacity: .38; transform: translate3d(7px, -8px, 0); }
+}
+@keyframes meteor-fall {
+  0%, 72%, 100% { opacity: 0; transform: translate3d(0, 0, 0) rotate(42deg); }
+  74% { opacity: .8; }
+  82% { opacity: 0; transform: translate3d(150px, 360px, 0) rotate(42deg); }
+}
+.workspace-sidebar {
+  border-right-color: rgba(101, 174, 215, .19);
+  background: linear-gradient(180deg, rgba(7, 17, 30, .97), rgba(5, 12, 22, .98) 68%, rgba(8, 17, 29, .97));
+  box-shadow: 12px 0 42px rgba(0, 0, 0, .16);
+}
+.workspace-brand { color: #f0f8fc; }
+.workspace-brand>span:first-child {
+  border-color: rgba(120, 214, 241, .52);
+  background: radial-gradient(circle, rgba(120, 214, 241, .15), rgba(8, 21, 34, .25) 68%);
+  box-shadow: 0 0 22px rgba(72, 181, 223, .14), inset 0 0 12px rgba(120, 214, 241, .08);
+}
+.workspace-nav-label { color: #7591a5; }
+.workspace-nav a { border-radius: 7px; transition: color .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.workspace-nav a:hover { border-color: rgba(120, 214, 241, .17); background: rgba(77, 153, 190, .08); }
+.workspace-nav a.active {
+  border-color: rgba(120, 214, 241, .24);
+  background: linear-gradient(100deg, rgba(67, 150, 190, .17), rgba(56, 102, 143, .045));
+  box-shadow: inset 2px 0 0 var(--blue), 0 0 20px rgba(55, 151, 196, .055);
+}
+.sidebar-note { border-top-color: rgba(103, 174, 214, .16); }
+.workspace-header {
+  border-bottom-color: rgba(103, 174, 214, .2);
+  background: rgba(5, 11, 20, .82);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+}
+.header-kicker, .eyebrow { color: #7fc9e7; }
+.workspace-header h1 { font-family: "Bahnschrift", "Segoe UI Variable", "Segoe UI", sans-serif; letter-spacing: .015em; }
+
+.welcome-panel {
+  border-color: rgba(112, 190, 226, .28);
+  background:
+    radial-gradient(ellipse at 79% 47%, rgba(62, 150, 190, .2), transparent 34%),
+    radial-gradient(ellipse at 57% 110%, rgba(105, 76, 170, .14), transparent 48%),
+    linear-gradient(125deg, #0c1a29, #08111e 70%);
+  box-shadow: inset 0 1px rgba(224, 246, 255, .045), 0 18px 60px rgba(0, 0, 0, .16);
+}
+.welcome-panel::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(110deg, transparent 35%, rgba(149, 173, 255, .035) 67%, transparent 89%);
+}
+.welcome-panel h2, .section-heading h2 { font-family: "Bahnschrift", "Segoe UI Variable", "Segoe UI", sans-serif; }
+.welcome-panel h2 { text-shadow: 0 0 28px rgba(108, 191, 227, .12); }
+.orbit-ring { border-color: rgba(120, 214, 241, .37); box-shadow: 0 0 16px rgba(82, 180, 216, .05); }
+.orbit-two { border-color: rgba(255, 198, 106, .24); }
+.orbit-planet { box-shadow: inset -13px -8px 18px #040912, 0 0 38px rgba(104, 189, 231, .28), 0 0 74px rgba(93, 117, 204, .12); }
+.orbit-star { text-shadow: 0 0 9px #ffc66a, 0 0 24px rgba(255, 198, 106, .7); }
+
+.stat-card, .planet-card, .comparison-card, .method-card, .guide-card,
+.phl-candidate-card, .life-support-intro, .life-support-controls,
+.life-support-results, .life-support-assumptions, .life-support-research,
+.life-journey-card, .life-propulsion, .life-resource-card,
+.custom-planet-form, .custom-score-card, .engineering-calculator,
+.engineering-controls, .engineering-summary, .engineering-facts-panel,
+.engineering-card, .engineering-source-note {
+  border-color: rgba(107, 172, 211, .2);
+  background-color: rgba(9, 19, 31, .78);
+  box-shadow: inset 0 1px rgba(229, 246, 255, .025), 0 12px 34px rgba(0, 0, 0, .11);
+}
+.stat-card, .planet-card, .comparison-card, .method-card, .guide-card,
+.phl-candidate-card, .life-journey-card, .life-resource-card,
+.custom-score-card, .engineering-card {
+  background-image: linear-gradient(145deg, rgba(18, 35, 52, .72), rgba(7, 15, 25, .86));
+}
+.stat-card { position: relative; overflow: hidden; }
+.stat-card::before {
+  position: absolute;
+  inset: 0 18% auto 0;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, rgba(120, 214, 241, .48), rgba(120, 214, 241, 0));
+}
+.planet-card, .comparison-card, .method-card, .guide-card, .phl-candidate-card,
+.life-resource-card, .custom-score-card, .engineering-card {
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.planet-card:hover, .comparison-card:hover, .method-card:hover, .guide-card:hover,
+.phl-candidate-card:hover, .life-resource-card:hover, .custom-score-card:hover,
+.engineering-card:hover {
+  border-color: rgba(120, 214, 241, .34);
+  box-shadow: inset 0 1px rgba(229, 246, 255, .04), 0 16px 42px rgba(0, 0, 0, .2), 0 0 24px rgba(60, 149, 193, .055);
+}
+.score-pill, .compare-score, .custom-score-value, .life-support-summary strong { text-shadow: 0 0 22px rgba(255, 198, 106, .13); }
+.section-heading h2 { text-shadow: 0 0 20px rgba(119, 197, 226, .07); }
+
+.workspace-body input:not([type="range"]), .workspace-body select,
+.workspace-body textarea, .workspace-body button, .engineering-calculator-inputs input {
+  border-color: rgba(109, 177, 216, .24);
+  background-color: rgba(5, 14, 24, .9);
+}
+.workspace-body input:focus, .workspace-body select:focus, .workspace-body textarea:focus,
+.workspace-body button:focus-visible {
+  border-color: rgba(120, 214, 241, .72);
+  box-shadow: 0 0 0 3px rgba(91, 187, 223, .12), 0 0 18px rgba(75, 174, 216, .1);
+  outline-color: var(--blue);
+}
+.workspace-body input[type="range"] { accent-color: var(--blue); }
+.workspace-body a:hover, .text-link:hover { color: #c4efff; }
+.primary-link, .secondary-button { border-color: rgba(255, 198, 106, .48); }
+.primary-link:hover, .secondary-button:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(255, 198, 106, .08);
+}
+.ranking-explainer, .guide-principle { background: linear-gradient(100deg, rgba(255, 198, 106, .055), rgba(18, 31, 43, .6)); }
+.life-sensitivity, .life-propulsion-results article, .engineering-calculator-output {
+  border-color: rgba(107, 172, 211, .19);
+  background-color: rgba(5, 13, 23, .6);
+}
+.life-sensitivity-chart text { fill: #b0c7d4; }
+.workspace-footer { border-top-color: rgba(103, 174, 214, .16); }
+
+/* The system-view canvas keeps its existing orbit layout; only its HUD changes. */
+body:not(.workspace-body) {
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(18, 57, 93, .2), transparent 58%),
+    radial-gradient(ellipse at 15% 12%, rgba(78, 51, 133, .1), transparent 42%),
+    #02050b;
+  --panel: rgba(5, 13, 24, .86);
+  --border: rgba(103, 174, 214, .27);
+  --blue: #78d6f1;
+  --gold: #ffc66a;
+  --text: #e9f3f8;
+  --muted: #9aafbd;
+}
+body:not(.workspace-body) .back,
+body:not(.workspace-body) .controls,
+body:not(.workspace-body) .status-panel {
+  border-color: rgba(103, 174, 214, .28);
+  background: linear-gradient(145deg, rgba(8, 19, 32, .91), rgba(4, 10, 19, .88));
+  box-shadow: 0 14px 42px rgba(0, 0, 0, .48), inset 0 1px rgba(226, 245, 255, .04);
+  backdrop-filter: blur(12px);
+}
+body:not(.workspace-body) .controls { border-radius: 10px; }
+body:not(.workspace-body) .heading { color: #9de3f5; text-shadow: 0 0 18px rgba(120, 214, 241, .2); }
+body:not(.workspace-body) select,
+body:not(.workspace-body) #systemSelect,
+body:not(.workspace-body) #panel,
+body:not(.workspace-body) .pl,
+body:not(.workspace-body) .go { border-color: rgba(103, 174, 214, .28); }
+body:not(.workspace-body) .pl:hover,
+body:not(.workspace-body) .pl.selected,
+body:not(.workspace-body) .planet-map-sim:hover { background: rgba(90, 171, 211, .1); }
+body:not(.workspace-body) #score { color: #ffd486; text-shadow: 0 0 24px rgba(255, 198, 106, .15); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .orbit-planet { animation: edenstar-planet-glow 7s ease-in-out infinite alternate; }
+  @keyframes edenstar-planet-glow {
+    from { filter: brightness(.96); }
+    to { filter: brightness(1.09); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .space-effects .space-dust, .space-effects .shooting-star { animation: none; }
+}

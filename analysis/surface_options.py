@@ -2,7 +2,18 @@
 from .scenarios import SURFACE_GUARDRAILS
 
 
+# Yüzey yaklaşımlarını hazırlar: açık yüzey (sıcaklık + basınç + atmosfer ön elemesi), basınçlı kubbe (kubbe puanı),
+# regolitle örtülü habitat (yerel veri gerektirir, puan yok) ve yalnızca Venüs için yüksek irtifa platformu (konsept, puan yok).
 def build_surface_options(metrics, dome_scenario, is_venus=False):
+    if dome_scenario.get("applicable") is False:
+        return [{
+            "id": "not_applicable",
+            "name": "Yüzey yerleşimi",
+            "status": "Bu gezegen sınıfına uygulanamaz",
+            "summary": dome_scenario.get("applicability_note") or "Yüzey yerleşimi için uygun sınıf değil.",
+            "score": None,
+            "checks": [],
+        }]
     temperature = metrics.get("temperature")
     observed_surface_temperature = metrics.get("temperature_kind") == "surface"
     pressure = metrics.get("surface_pressure_bar")
@@ -36,6 +47,7 @@ def build_surface_options(metrics, dome_scenario, is_venus=False):
             "summary": metrics.get("atmosphere_summary") or "Atmosfer bileşimi bilinmiyor",
         },
     ]
+    # Bir koşul aralık dışındaysa açık yüzey uygun değil; biri bilinmiyorsa karar verilemez; hepsi uygunsa ön koşullar uygun.
     if any(check["status"] == "risk" for check in direct_checks):
         direct_status = "Açık yüzeyde yaşama uygun görünmüyor"
         direct_summary = "Ölçülen koşullardan en az biri insan için korumasız yaşam sınırlarının dışında."

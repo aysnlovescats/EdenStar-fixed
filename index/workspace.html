@@ -3,16 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ExoHabitat · Koloni Analiz Merkezi</title>
-  <link rel="stylesheet" href="../css/workspace.css?v=phl-ranking-4">
+  <title>EdenStar · Koloni Analiz Merkezi</title>
+  <link rel="stylesheet" href="../css/workspace.css?v=engineering-heat-1">
   <link rel="stylesheet" href="../css/scenario-guide.css?v=1">
   <link rel="stylesheet" href="../css/custom-builder.css?v=1">
-  <link rel="stylesheet" href="../css/life-support.css?v=mission-simulator-3">
+  <link rel="stylesheet" href="../css/life-support.css?v=mission-sensitivity-1">
+  <link rel="stylesheet" href="../css/space-theme.css?v=orbit-atmosphere-3">
+  <link rel="stylesheet" href="../css/esi-check.css?v=weights-1">
 </head>
 <body class="workspace-body">
+  <div class="space-effects" aria-hidden="true"><i class="space-dust dust-1"></i><i class="space-dust dust-2"></i><i class="space-dust dust-3"></i><i class="space-dust dust-4"></i><i class="space-dust dust-5"></i><i class="space-dust dust-6"></i><i class="space-dust dust-7"></i><i class="space-dust dust-8"></i><i class="shooting-star shooting-star-1"></i><i class="shooting-star shooting-star-2"></i></div>
   <div class="workspace-shell">
     <aside class="workspace-sidebar">
-      <a class="workspace-brand" href="#overview"><span>✦</span><span>EXOHABITAT<small>PLANETARY SETTLEMENT LAB</small></span></a>
+      <a class="workspace-brand" href="#overview"><span>✦</span><span>EDENSTAR<small>PLANETARY SETTLEMENT LAB</small></span></a>
       <div class="workspace-nav-label">ÇALIŞMA ALANI</div>
       <nav class="workspace-nav" aria-label="Ana menü">
         <a href="#overview" data-page="overview">⌂ <span>Genel bakış</span></a>
@@ -35,7 +38,7 @@
 
     <main class="workspace-main">
       <header class="workspace-header">
-        <div><span class="header-kicker">EXOHABITAT / ARAŞTIRMA ARAYÜZÜ</span><h1 id="pageTitle">Genel bakış</h1></div>
+        <div><span class="header-kicker">EDENSTAR / ARAŞTIRMA ARAYÜZÜ</span><h1 id="pageTitle">Genel bakış</h1></div>
         <div class="header-status"><i></i> NASA veri kümesi · yerel analiz</div>
       </header>
 
@@ -45,14 +48,14 @@
           <div class="welcome-orbit" aria-hidden="true"><div class="orbit-ring orbit-one"></div><div class="orbit-ring orbit-two"></div><div class="orbit-planet"></div><div class="orbit-star">✦</div></div>
         </div>
         <div class="section-heading"><div><span class="eyebrow">ANALİZ PANOSU</span><h2>Mevcut veriyle öne çıkanlar</h2></div><label class="scenario-select-label">Senaryo<select id="overviewScenario"><option value="surface">Yüzey · kubbe</option><option value="underground">Yer altı sığınağı</option><option value="orbital">Yörünge habitatı</option></select></label></div>
-        <div class="stats-grid"><article class="stat-card"><span>UYGUNLUK ÖN ELEME</span><strong id="overviewEligible">—</strong><small>seçili senaryo ve kapsam filtresi</small></article><article class="stat-card"><span>GÜNEŞ SİSTEMİ · EN YÜKSEK</span><strong id="overviewSolarScore">—</strong><small id="overviewSolarName">veri yükleniyor</small></article><article class="stat-card"><span>ÖTEGEZEGENLER · EN YÜKSEK</span><strong id="overviewExoplanetScore">—</strong><small id="overviewExoplanetName">veri yükleniyor</small></article></div>
+        <div class="stats-grid"><article class="stat-card"><span>UYGUNLUK ÖN ELEME</span><strong id="overviewEligible">—</strong><small>seçili senaryo ve kapsam filtresi</small></article><article class="stat-card"><span>BİLİNEN ÖLÇÜTLER · GÜNEŞ SİSTEMİ</span><strong id="overviewSolarScore">—</strong><small id="overviewSolarName">veri yükleniyor</small></article><article class="stat-card"><span>BİLİNEN ÖLÇÜTLER · ÖTEGEZEGENLER</span><strong id="overviewExoplanetScore">—</strong><small id="overviewExoplanetName">veri yükleniyor</small></article></div>
         <div class="section-heading compact"><div><span class="eyebrow">İLK SONUÇLAR</span><h2>Seçili senaryoda öne çıkan gökcisimleri</h2></div><a href="#rankings" class="text-link">Tüm sıralama →</a></div>
         <div id="overviewTopList" class="planet-grid"><p class="loading-state">NASA verisi ve senaryo puanları yükleniyor…</p></div>
       </section>
 
       <section class="workspace-page" id="page-catalog" hidden>
         <div class="section-heading"><div><span class="eyebrow">NASA EXOPLANET ARCHIVE + GÜNEŞ SİSTEMİ</span><h2>Gezegen kataloğu</h2><p class="section-copy">Arama yap, senaryo ve minimum veri kapsamına göre sonuçları daralt.</p></div></div>
-        <div class="filter-bar"><label>Gezegen veya yıldız ara<input id="catalogSearch" type="search" placeholder="Örn. Mars, Kepler-…"></label><label>Senaryo<select id="catalogScenario"><option value="surface">Yüzey · kubbe</option><option value="underground">Yer altı sığınağı</option><option value="orbital">Yörünge habitatı</option></select></label><label>En az veri kapsamı<select id="catalogCoverage"><option value="0">Tümü</option><option value="30" selected>%30</option><option value="50">%50</option><option value="70">%70</option></select></label></div>
+        <div class="filter-bar"><label>Gezegen veya yıldız ara<input id="catalogSearch" type="search" placeholder="Örn. Mars, Kepler-…"></label><label>Senaryo<select id="catalogScenario"><option value="surface">Yüzey · kubbe</option><option value="underground">Yer altı sığınağı</option><option value="orbital">Yörünge habitatı</option></select></label><label>En az veri kapsamı<select id="catalogCoverage"><option value="0" selected>Tümü</option><option value="30">%30</option><option value="50">%50</option><option value="70">%70</option></select></label></div>
         <p id="catalogSummary" class="result-summary"></p><div id="catalogResults" class="planet-grid"></div>
       </section>
 
@@ -71,7 +74,7 @@
 
       <section class="workspace-page" id="page-rankings" hidden>
         <div class="section-heading"><div><span class="eyebrow">SENARYO BAZLI ÖN ELEME</span><h2>En uygun görünenler</h2><p class="section-copy">Sıralama seçilen senaryonun proje ağırlıklarına dayanır; veri kapsamını da kontrol et.</p></div><a href="#scenarios" class="text-link">Senaryoda gerekenler →</a></div>
-        <div class="filter-bar ranking-filters"><label>Yerleşim senaryosu<select id="rankingScenario"><option value="surface">Yüzey · kubbe</option><option value="underground">Yer altı sığınağı</option><option value="orbital">Yörünge habitatı</option></select></label><label>Minimum veri kapsamı<select id="rankingCoverage"><option value="0">Tümü</option><option value="30" selected>%30</option><option value="50">%50</option><option value="70">%70</option></select></label><label>Gezegen / sistem ara<input id="rankingSearch" type="search" placeholder="İsteğe bağlı filtre"></label></div>
+        <div class="filter-bar ranking-filters"><label>Yerleşim senaryosu<select id="rankingScenario"><option value="surface">Yüzey · kubbe</option><option value="underground">Yer altı sığınağı</option><option value="orbital">Yörünge habitatı</option></select></label><label>Minimum veri kapsamı<select id="rankingCoverage"><option value="0" selected>Tümü</option><option value="30">%30</option><option value="50">%50</option><option value="70">%70</option></select></label><label>Gezegen / sistem ara<input id="rankingSearch" type="search" placeholder="İsteğe bağlı filtre"></label></div>
         <div class="ranking-explainer"><span>ⓘ</span><p>Güneş Sistemi ve ötegezegen sonuçları ayrı sıralanır. Güneş Sistemi yüzey sıcaklıkları ile ötegezegen denge sıcaklıkları aynı ölçüm değildir. Puan aralığının alt ucu ölçülen ölçütleri, üst ucu eksik ölçütlerin olası en yüksek katkısını gösterir; bu bir koloni başarısı tahmini değildir.</p></div>
         <div class="ranking-toolbar"><p id="rankingSummary" class="result-summary"></p><button id="compareSelectedButton" class="secondary-button" type="button" disabled>Seçilenleri karşılaştır <b id="compareSelectedCount">0</b></button></div>
         <div id="rankingResults" class="planet-grid"></div>
@@ -91,7 +94,7 @@
           <article class="guide-card">
             <header><span class="guide-index">02 / YER ALTI</span><h3>Yer altı sığınağı</h3><p>Doğal bir boşlukta veya kazılmış ve güçlendirilmiş bir yer altı habitatında yaşamak.</p></header>
             <div class="guide-block"><h4>Gerekenler</h4><ul><li>Uygun mağara/boşluğun varlığı, derinliği ve ölçülmüş haritası</li><li>Kaya dayanımı, çökme ve sismik hareket riski</li><li>Yerel sıcaklık profili, erişilebilir su ve diğer kaynaklar</li><li>Erişim/kaçış yolları, güç, hava dolaşımı ve kapalı döngü yaşam desteği</li></ul></div>
-            <div class="guide-block"><h4>Bu projedeki puan neyi kapsıyor?</h4><p>Yarıçap, yerçekimi, su, yer altı ısısı ve jeolojik kararlılık ölçütlerini. Gezegen geneli veriler belirli bir mağaranın varlığını veya güvenliğini doğrulayamaz; noktasal keşif verisi gerekir.</p></div>
+            <div class="guide-block"><h4>Bu projedeki puan neyi kapsıyor?</h4><p>Yerel jeoloji/erişim/kararlılık (%30), erişilebilir su (%22), radyasyon koruması (%20), termal koşullar (%8), jeotermal potansiyel (%8), yerçekimi (%6), yoğunluk (%4) ve yarıçap (%2). Gezegen ölçeğindeki veriler belirli bir mağarayı veya güvenli kazı alanını doğrulayamaz; yerel saha ölçümleri gerekir. Denge sıcaklığı gerçek yer altı sıcaklığı değildir ve yalnızca varsayımsal modelde kaba vekil olarak gösterilir.</p></div>
             <div class="guide-sources"><a href="https://www.nasa.gov/moontomarsarchitecture-components/" target="_blank" rel="noopener noreferrer">NASA · Ay-Mars mimarisi ve altyapı ↗</a><a href="https://www.nasa.gov/reference/environmental-control-and-life-support-systems-eclss/" target="_blank" rel="noopener noreferrer">NASA · Yaşam destek sistemleri ↗</a></div>
             <button class="guide-rank-button" type="button" data-guide-scenario="underground">Bu senaryoda sıralamayı aç →</button>
           </article>
@@ -156,9 +159,13 @@
             <label>Kaplanacak alan <span>m²</span><input id="engineeringShieldArea" type="number" min="1" max="10000000" step="any" value="100"></label>
             <label>Örtü kalınlığı <span>m · düzenlenebilir örnek</span><input id="engineeringShieldDepth" type="number" min="0.01" max="100" step="any" value="0.5"></label>
             <label>Malzeme yoğunluğu <span>kg/m³ · düzenlenebilir örnek</span><input id="engineeringShieldDensity" type="number" min="1" max="100000" step="any" value="1500"></label>
+            <label>Habitat iç basıncı <span>bar · örnek varsayım</span><input id="engineeringInternalPressure" type="number" min="0" max="1000" step="any" value="1.013"></label>
+            <label>Kubbe yarıçapı <span>m · ince küre varsayımı</span><input id="engineeringDomeRadius" type="number" min="0.1" max="10000" step="any" value="5"></label>
+            <label>Kubbe duvar kalınlığı <span>m · örnek varsayım</span><input id="engineeringDomeThickness" type="number" min="0.001" max="100" step="any" value="0.1"></label>
           </div>
           <div id="engineeringShieldOutput" class="engineering-calculator-output">Hesaplama için geçerli değerleri gir.</div>
-          <small class="engineering-assumption-note">1500 kg/m³ ve 0,5 m başlangıç değerleri yalnızca örnek varsayımlardır. NASA’nın belirli Ay radyasyon senaryolarındaki modelinden esinlenir; başka gezegene veya habitat tasarımına doğrudan aktarılmaz. Yerel malzeme yoğunluğunu ve tasarım kalınlığını araştırma verisiyle değiştir.</small>
+          <small class="engineering-assumption-note">Regolit dengesi h = max(Pi − Pdış, 0)/(ρg) ile yalnızca dışarı doğru basınç yükü için hesaplanır. Kubbe gerilmesi σ = Δp·r/(2t) ince küresel kabuğun membran gerilmesi tahminidir; dış basınçta burkulmayı ve tasarım güvenliğini hesaplamaz. Tüm girdiler örnek varsayımlardır.</small>
+          <div class="engineering-heat-block"><div><span class="eyebrow">İLERİ SEVİYE · RADYASYONLA ISI ALIŞVERİŞİ</span><p>Dış sıcaklık mevcut hedef verisinden alınır. Ötegezegende bu denge sıcaklığı vekilidir; hesap yalıtım/iletim kayıplarını kapsamaz.</p></div><div class="engineering-calculator-inputs engineering-heat-inputs"><label>Isı alışverişi alanı <span>m² · örnek varsayım</span><input id="engineeringHeatArea" type="number" min="0.1" max="10000000" step="any" value="100"></label><label>İç sıcaklık <span>K · örnek varsayım</span><input id="engineeringInteriorTemp" type="number" min="1" max="2000" step="any" value="293"></label><label>Yüzey yayma katsayısı ε <span>0–1 · örnek varsayım</span><input id="engineeringEmissivity" type="number" min="0.01" max="1" step="any" value="0.9"></label></div><div id="engineeringHeatOutput" class="engineering-calculator-output">Hedef sıcaklığıyla hesaplanır.</div></div>
         </section>
         <div class="section-heading compact"><div><span class="eyebrow">GEREKSİNİM PANOSU</span><h2>Ölçüm, altyapı ve teknoloji başlıkları</h2></div></div>
         <div id="engineeringChecklist" class="engineering-grid"><p class="loading-state">Gereksinimler hazırlanıyor…</p></div>
@@ -169,13 +176,39 @@
 
       <section class="workspace-page" id="page-method" hidden>
         <div class="section-heading"><div><span class="eyebrow">ŞEFFAF ANALİZ</span><h2>Veri ve yöntem</h2><p class="section-copy">Sonuçların hangi verilerden ve proje varsayımlarından geldiğini açıkça gösteriyoruz.</p></div></div>
-        <div class="method-grid"><article class="method-card"><span class="method-number">01</span><h3>Kaynak veriler</h3><p>Ötegezegen parametreleri NASA Exoplanet Archive CSV dosyasından; Güneş Sistemi için temel değerler proje veri tabanından alınır.</p><a href="https://exoplanetarchive.ipac.caltech.edu/docs/data.html" target="_blank" rel="noopener noreferrer">NASA arşivini aç ↗</a></article><article class="method-card"><span class="method-number">02</span><h3>Ön eleme puanı</h3><p>Her senaryonun ölçütleri ve ağırlıkları ayrı tanımlanır. Bilinen ölçütlerin ağırlıklı katkısı toplam senaryo ağırlığına göre puanlanır.</p><p class="formula">Ölçüt katkısı = ölçüt puanı × ağırlık</p></article><article class="method-card"><span class="method-number">03</span><h3>Veri durumu</h3><p><b>Arşiv:</b> kaynak katalog değeri · <b>Türetilmiş:</b> başka ölçümlerden hesaplandı · <b>Tahmin:</b> fiziksel varsayım kullanıldı · <b>Veri yok:</b> puana katkı yapmaz.</p></article><article class="method-card"><span class="method-number">04</span><h3>Bilimsel sınırlar</h3><p>Denge sıcaklığı yüzey sıcaklığı değildir. Yıldız enerjisi zararlı radyasyon dozu değildir. Yerel ölçümler tüm gezegene genellenmez.</p></article></div>
+        <div class="method-grid"><article class="method-card"><span class="method-number">01</span><h3>Kaynak veriler</h3><p>Ötegezegen parametreleri NASA Exoplanet Archive CSV dosyasından; Güneş Sistemi için temel değerler proje veri tabanından alınır.</p><a href="https://exoplanetarchive.ipac.caltech.edu/docs/data.html" target="_blank" rel="noopener noreferrer">NASA arşivini aç ↗</a></article><article class="method-card"><span class="method-number">02</span><h3>Ön eleme puanı</h3><p>Her senaryonun ölçütleri ve ağırlıkları ayrı tanımlanır. Bilinen ölçütlerin ağırlıklı katkısı toplam senaryo ağırlığına göre puanlanır.</p><p class="formula">Ölçüt katkısı = ölçüt puanı × ağırlık</p></article><article class="method-card"><span class="method-number">03</span><h3>Veri durumu</h3><p><b>Arşiv:</b> kaynak katalog değeri · <b>Türetilmiş:</b> başka ölçümlerden hesaplandı · <b>Tahmin:</b> fiziksel varsayım kullanıldı · <b>Veri yok:</b> ana puanda 0 kabul edilir; veri kapsamı düşük kalır.</p></article><article class="method-card"><span class="method-number">04</span><h3>Bilimsel sınırlar</h3><p>Denge sıcaklığı yüzey sıcaklığı değildir. Yıldız enerjisi zararlı radyasyon dozu değildir. Yerel ölçümler tüm gezegene genellenmez.</p></article></div>
+        <section class="esi-check" aria-labelledby="esiCheckTitle">
+          <div class="esi-check-heading">
+            <div><span class="eyebrow">TUTARLILIK KONTROLÜ</span><h3 id="esiCheckTitle">Proje puanı ile PHL Dünya Benzerlik İndeksi (ESI)</h3><p>Her nokta, hem PHL kataloğunda ESI değeri olan hem de seçili senaryoda en az bir doğrulanmış ölçütü bulunan bir ötegezegendir. Bu bir doğrulama değil, genel bir tutarlılık kontrolüdür: ESI Dünya'ya benzerliği ölçer, proje puanı ise senaryo ölçütlerine göre ön eleme yapar.</p></div>
+            <label class="scenario-select-label">Senaryo<select id="esiScenario"><option value="surface">Yüzey · kubbe</option><option value="underground">Yer altı sığınağı</option><option value="orbital">Yörünge habitatı</option></select></label>
+          </div>
+          <div id="esiCheckSummary" class="esi-check-stats" aria-live="polite"><div class="loading-state">Karşılaştırma hazırlanıyor…</div></div>
+          <div class="esi-check-legend" aria-hidden="true"><span><i class="esi-key esi-key-conservative"></i>PHL konservatif aday</span><span><i class="esi-key esi-key-optimistic"></i>PHL iyimser aday</span><span><i class="esi-key esi-key-other"></i>Diğer ötegezegenler</span></div>
+          <div class="esi-check-chart-wrap"><div id="esiCheckChart" class="esi-check-chart" role="img" aria-label="ESI ile proje puanı arasındaki dağılım grafiği"></div><div id="esiCheckTooltip" class="esi-check-tooltip" hidden></div></div>
+          <details id="esiCheckTable" class="esi-check-table"><summary>Tablo görünümü: PHL adayları</summary><div></div></details>
+          <small id="esiCheckNote" class="esi-check-note"></small>
+        </section>
+        <section class="esi-check weight-check" aria-labelledby="weightCheckTitle">
+          <div class="esi-check-heading">
+            <div><span class="eyebrow">AĞIRLIKLAR VE DUYARLILIK</span><h3 id="weightCheckTitle">Ağırlıklar neye göre verildi, sonucu ne kadar etkiliyor?</h3><p>Her ağırlığın gerekçesi ve dayandığı kaynak aşağıda. Ardından ağırlıklar rastgele değiştirildiğinde sıralamanın ne kadar korunduğu ölçülüyor.</p></div>
+            <div class="weight-check-controls">
+              <label class="scenario-select-label">Senaryo<select id="weightScenario"><option value="surface">Yüzey · kubbe</option><option value="underground">Yer altı sığınağı</option><option value="orbital">Yörünge habitatı</option></select></label>
+              <label class="scenario-select-label">Ağırlık değişimi<select id="weightSpread"><option value="20">±%20</option><option value="50">±%50</option></select></label>
+            </div>
+          </div>
+          <div id="weightRationale" class="weight-rationale"><div class="loading-state">Gerekçeler yükleniyor…</div></div>
+          <h4 class="weight-subtitle">Duyarlılık analizi</h4>
+          <div id="weightSensitivitySummary" class="esi-check-stats weight-stats" aria-live="polite"><div class="loading-state">Sıralamalar yeniden hesaplanıyor… (ilk seferde birkaç saniye sürebilir)</div></div>
+          <div id="weightRankChart" class="weight-rank-chart"></div>
+          <details id="weightOneAtATime" class="esi-check-table"><summary>Tek tek ağırlık artırınca ne oluyor?</summary><div></div></details>
+          <small id="weightSensitivityNote" class="esi-check-note"></small>
+        </section>
         <div class="future-note"><span>SONRAKİ AŞAMALAR</span><p>Benzer gezegen önerileri için makine öğrenmesi; avantaj ve riskleri yorumlayan danışman için yapay zekâ entegrasyonu proje planında ayrı aşamalar olarak yer alıyor.</p></div>
       </section>
 
       <section class="workspace-page life-support-page" id="page-life-support" hidden>
         <div class="section-heading"><div><span class="eyebrow">GÖREV / BİYOHABİTAT SİMÜLATÖRÜ</span><h2>Hedefi seç, yolculuğu ve yaşamı planla</h2><p class="section-copy">Hedef gökcismine göre yolculuk süresini ve yerleşim senaryosu değerlendirmesini gösterir; ardından yolculuk ve kalış için gereken kaynakları tahmin eder.</p></div></div>
-        <div class="life-support-intro"><span>MODELİN KAPSAMI</span><p>Yaşam desteği, NASA’nın kişi başı gereksinimlerinden hesaplanır. İkmal = ekip × (yolculuk + kalış kişi-günü) × günlük gereksinim × geri kazanımdan kalan pay; yerel gıda üretimi yalnızca hedefteki kalışa uygulanır. Ötegezegen yolculuğu, katalogdaki ışık yılı uzaklığını seçilen sabit hıza bölerek tahmin edilir. Güneş Sistemi için ideal Hohmann aktarımı kullanılır. Bu sonuçlar gerçek görev/yörünge planı değildir.</p><a href="https://ntrs.nasa.gov/api/citations/20200002230/downloads/20200002230.pdf" target="_blank" rel="noopener noreferrer">NASA yaşam destek raporunu aç ↗</a></div>
+        <div class="life-support-intro"><span>MODELİN KAPSAMI</span><p>Yaşam desteği NASA’nın kişi başı gereksinimlerini, geri kazanım/yerel kaynak varsayımlarını ve yedek payını kullanır. Ötegezegenlerde sabit hızla hesaplanan toplam yolculuk 100 yılı aşarsa ikmal ve roket kütlesi hesaplanmaya devam eder; sonuç insanlı görev için gerçekçi değil uyarısıyla sunulur. Güç ve panel alanı ideal akı hesabıdır; gece, toz, gölge, depolama ve saha koşulları dahil değildir. Güneş Sistemi için ideal Hohmann aktarımı kullanılır. Sonuçlar gerçek görev/yörünge planı değildir.</p><a href="https://ntrs.nasa.gov/api/citations/20200002230/downloads/20200002230.pdf" target="_blank" rel="noopener noreferrer">NASA yaşam destek raporunu aç ↗</a></div>
         <div class="life-mission-planner">
           <label>Hedef gökcismi<select id="lifeDestination"><option value="">Hedefler yükleniyor…</option></select></label>
           <label>Yerleşim türü<select id="lifeScenario"><option value="surface">Yüzey habitatı / kubbe</option><option value="underground">Yer altı sığınağı</option><option value="orbital">Yörünge habitatı</option></select></label>
@@ -195,8 +228,12 @@
               <label>Su geri kazanımı <output id="waterRecoveryLabel">90%</output><input id="waterRecovery" type="range" min="0" max="100" step="1" value="90"></label>
               <label>Oksijenin yerel üretimi / geri kazanımı <output id="oxygenRecoveryLabel">50%</output><input id="oxygenRecovery" type="range" min="0" max="100" step="1" value="50"></label>
               <label>Yerel gıda üretimi <output id="foodProductionLabel">20%</output><input id="foodProduction" type="range" min="0" max="100" step="1" value="20"></label>
+              <label>Yedek ikmal payı <output id="supplyReserveLabel">20%</output><input id="supplyReserve" type="range" min="0" max="50" step="1" value="20"></label>
+              <label id="localWaterWrap" hidden>Hedefte yerel su kullanım varsayımı <output id="localWaterLabel">0%</output><input id="localWaterUse" type="range" min="0" max="100" step="1" value="0"></label>
+              <label>Kişi başı ortalama güç <span>W · örnek varsayım</span><input id="lifePowerPerPerson" type="number" min="1" max="1000000" step="any" value="1000"></label>
+              <label>Güneş paneli verimi <span>% · örnek varsayım</span><input id="lifePanelEfficiency" type="number" min="1" max="100" step="1" value="25"></label>
             </div>
-            <p class="life-support-control-note">Yüzdeler yolculuk aracı ve yerleşim habitatında kullanılan sadeleştirilmiş varsayımlardır. Yerel gıda üretimi yalnızca hedefte kalış süresine uygulanır; bitki verimi ayrıca modellenmez.</p>
+            <p class="life-support-control-note">Yüzdeler yolculuk aracı ve yerleşim habitatında kullanılan sadeleştirilmiş varsayımlardır. Yerel gıda üretimi yalnızca hedefte kalış süresine uygulanır. Yerel su yüzdesi yalnızca Ay, Mars, Europa ve Enceladus senaryolarında açılır; hedefteki su ihtiyacının örnek olarak karşılanabildiği varsayılır, saha erişimi ve çıkarma/arıtma kayıpları modellenmez. Yedek payı, hesaplanan ikmal kütlesine eklenir.</p>
           </form>
           <div class="life-support-results" aria-live="polite">
             <div class="life-support-summary"><span>YOLCULUK + HEDEFTE KALIŞ İÇİN TAHMİNİ İKMAL</span><strong id="lifeTotalResupply">—</strong><small id="lifeMissionSummary">—</small></div>
@@ -206,6 +243,8 @@
               <article class="life-resource-card"><span>GIDA</span><strong id="lifeFoodResupply">—</strong><small id="lifeFoodDaily">—</small><div class="life-resource-track"><i id="lifeFoodTrack"></i></div></article>
             </div>
             <p class="life-support-bottleneck" id="lifeBottleneck">—</p>
+            <p class="life-support-bottleneck" id="lifePowerEstimate">Hedef seçildiğinde ideal panel alanı hesaplanır.</p>
+            <section class="life-sensitivity" aria-labelledby="lifeSensitivityTitle"><h3 id="lifeSensitivityTitle">Su geri kazanımına duyarlılık</h3><p>Diğer girdiler sabitken su geri kazanım oranına göre toplam ikmal. Yedek payı ve yerel su varsayımı da hesaba katılır.</p><div id="lifeSensitivityChart" role="img" aria-label="Su geri kazanım oranına göre toplam ikmal çizgisi"></div><small id="lifeSensitivitySummary"></small></section>
           </div>
         </div>
         <section class="life-propulsion" aria-labelledby="lifePropulsionTitle">
@@ -220,17 +259,24 @@
             <article><span>TAHMİNİ TOPLAM İTİCİ MADDE</span><strong id="lifePropellantTotal">—</strong></article>
             <article><span>YAKIT · ÖRNEK LH₂</span><strong id="lifePropellantFuel">—</strong></article>
             <article><span>OKSİTLEYİCİ · ÖRNEK SIVI O₂</span><strong id="lifePropellantOxidizer">—</strong></article>
+            <article><span>İDEAL BAŞLANGIÇ KÜTLESİ</span><strong id="lifeLaunchMass">—</strong></article>
           </div>
           <p class="life-propulsion-note" id="lifePropellantNote">Bir hedef seçildiğinde Δv önerisi ve kütle tahmini burada görünür.</p>
           <small class="life-propulsion-caveat">Örnek motor varsayımı: Isp 350 saniye (<a href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/" target="_blank" rel="noopener noreferrer">NASA denklem örneği</a>) ve O/F 6:1 (<a href="https://www.nasa.gov/reference/the-space-shuttle/" target="_blank" rel="noopener noreferrer">Space Shuttle motoru</a>). Ay için önerilen 4,07 km/s, Dünya alçak yörüngesinden Ay yörüngesine yaklaşık transfer değeridir (<a href="https://ntrs.nasa.gov/api/citations/19900016723/downloads/19900016723.pdf" target="_blank" rel="noopener noreferrer">NASA raporu</a>); iniş/kalkış dahil değildir. Yaşam desteği ikmal kütlesi araç yüküne otomatik eklenir. Tahmin ideal roket denklemiyle tek kademeli alt-seviye hesaptır; tank/gövde, kademeler, Dünya’dan fırlatma, yerçekimi kayıpları ve tam görev yörüngesi modellenmez. Uygulanabilir roket tasarımı değildir.</small>
         </section>
-        <div class="life-support-assumptions"><h3>Modelde kullanılan başlangıç değerleri</h3><div><span>Oksijen</span><b>0,83 kg / kişi-gün</b></div><div><span>Gıda</span><b>0,62 kg / kişi-gün</b></div><div><span>İçme ve yemek hazırlama suyu</span><b>3,56 kg / kişi-gün</b></div><div><span>Hijyen, çamaşır ve temizlik suyu</span><b>26,0 kg / kişi-gün</b></div><small>NASA raporundaki insan yaşam destek gereksinimleri; su toplamı 29,56 kg / kişi-gündür. Bu kaba hesap ekip farklarını, sızıntıyı, depolama kütlesini ve donanımın güç/onarım ihtiyacını kapsamaz. Oksijen üretmek için gereken su/enerji ayrıca modellenmiyor; yolculuk ve habitat için ortak geri kazanım varsayımı kullanılıyor.</small></div>
+        <div class="life-support-assumptions"><h3>Modelde kullanılan başlangıç değerleri</h3><div><span>Oksijen</span><b>0,83 kg / kişi-gün</b></div><div><span>Gıda</span><b>0,62 kg / kişi-gün</b></div><div><span>İçme ve yemek hazırlama suyu</span><b>3,56 kg / kişi-gün</b></div><div><span>Hijyen, çamaşır ve temizlik suyu</span><b>26,0 kg / kişi-gün</b></div><small>NASA raporundaki insan yaşam destek gereksinimleri; su toplamı 29,56 kg / kişi-gündür. Bu kaba hesap ekip farklarını, sızıntıyı, depolama kütlesini ve donanımın güç/onarım ihtiyacını kapsamaz. Oksijen üretmek için gereken su/enerji ayrıca modellenmiyor; yolculuk ve habitat için ortak geri kazanım varsayımı kullanılıyor. Panel alanı kişi başı güç ve panel veriminden, Dünya akısı 1361 W/m² referans alınarak hesaplanan ideal değerdir.</small></div>
         <div class="life-support-research"><div><span class="eyebrow">BİYOLOJİK ÜRETİM VERİSİ</span><h3>Bitkiler bu sisteme nasıl eklenebilir?</h3><p>NASA’nın VEG-05 deneyi ISS’de domates bitkilerinin farklı ışık tariflerinde büyümesini ve bitki-mikrop topluluklarını inceliyor. Bu veri bitki deneyleri için yararlı; tek başına habitatın toplam gıda veya oksijen üretimini vermez.</p></div><a href="https://osdr.nasa.gov/bio/repo/data/studies/OSD-766" target="_blank" rel="noopener noreferrer">NASA VEG-05 verilerini incele ↗</a></div>
       </section>
 
-      <footer class="workspace-footer"><span>EXOHABITAT · PLANETARY SETTLEMENT SCREENING</span><span>SONUÇLAR ÖN DEĞERLENDİRME AMAÇLIDIR</span></footer>
+      <footer class="workspace-footer"><span>EDENSTAR · PLANETARY SETTLEMENT SCREENING</span><span>SONUÇLAR ÖN DEĞERLENDİRME AMAÇLIDIR</span></footer>
     </main>
   </div>
-  <script src="../js/workspace.js?v=phl-ranking-4"></script>
+  <script src="../js/workspace/common.js?v=modules-1"></script>
+  <script src="../js/workspace/catalog.js?v=modules-1"></script>
+  <script src="../js/workspace/engineering.js?v=modules-1"></script>
+  <script src="../js/workspace/rankings.js?v=modules-1"></script>
+  <script src="../js/workspace/life-support.js?v=modules-1"></script>
+  <script src="../js/workspace/method.js?v=weights-2"></script>
+  <script src="../js/workspace/app.js?v=modules-1"></script>
 </body>
 </html>

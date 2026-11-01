@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+
+# Geçici dosyalar
+tmp/
+
+# İşletim sistemi / editör
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Kişisel çıktı dosyaları
+output/

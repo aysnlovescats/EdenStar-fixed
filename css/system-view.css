@@ -228,7 +228,14 @@ input[type="range"] {
 .scenario-heading strong{color:var(--gold);font-size:17px;white-space:nowrap}
 .scenario-score-block{display:grid;justify-items:end;gap:5px;max-width:62%;text-align:right}
 .scenario-score-block small,.score-range-note{color:#b19c79;font-size:8px;line-height:1.4;white-space:normal}
+.model-assumptions{margin-top:8px;font-size:12px;line-height:1.5}
+.model-assumptions summary{cursor:pointer;color:#83cfff}
+.model-assumptions ul{margin:7px 0;padding-left:18px;color:#a9bdca}
+.model-assumptions>small{display:block;color:#8da2b0}
 .scenario-meta{margin:6px 0 9px;color:var(--muted);font-size:10px}
+.exploratory-model{display:grid;gap:5px;margin:10px 0;padding:10px 12px;border:1px solid rgba(245,177,74,.28);border-radius:8px;background:rgba(42,31,15,.24);color:#d8c6a5;font-size:10px;line-height:1.5}
+.exploratory-model strong{color:#ffc15b;font-size:13px}
+.exploratory-model span,.exploratory-model small{color:var(--muted)}
 .scenario-criterion{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(90,157,205,.12);font-size:10px}
 .scenario-criterion span{color:var(--muted)}
 .scenario-criterion small{color:#637d8e}
@@ -351,6 +358,8 @@ input[type="range"] {
 .mission-content .scenario-heading strong{color:#ffc35b;font:600 25px/1 "Segoe UI",Arial,sans-serif}
 .mission-content .scenario-description{color:#9badb9;font:12px/1.65 "Segoe UI",Arial,sans-serif}
 .mission-content .scenario-meta{color:#8195a3;font:10px/1.5 "Segoe UI",Arial,sans-serif}
+.mission-content .exploratory-model{padding:12px 14px;font:10px/1.6 "Segoe UI",Arial,sans-serif}
+.mission-content .exploratory-model strong{font-size:14px}
 .mission-content .scenario-criterion{display:grid;grid-template-columns:minmax(150px,1fr) minmax(70px,100px) minmax(90px,160px);align-items:center;gap:12px;padding:10px 0;border-color:rgba(114,187,229,.12);font:11px/1.35 "Segoe UI",Arial,sans-serif}
 .mission-content .scenario-criterion span{color:#a9bac5}
 .mission-content .scenario-criterion b{color:#dceaf2;text-align:right}
@@ -378,6 +387,10 @@ input[type="range"] {
 .comparison-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding-bottom:10px;border-bottom:1px solid rgba(114,187,229,.14)}
 .comparison-card h4{margin:0;color:#dcecf5;font:600 13px/1.35 "Segoe UI",Arial,sans-serif}
 .comparison-score{color:#ffc35b;font:600 19px/1 "Segoe UI",Arial,sans-serif;white-space:nowrap}
+.comparison-card header{min-width:0}
+.comparison-card header h4{flex:1;min-width:0;overflow-wrap:anywhere}
+.comparison-card .comparison-score{flex:0 0 min(44%,160px);min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+.comparison-card .comparison-score small{line-height:1.4;overflow-wrap:anywhere}
 .comparison-score small{display:block;margin-top:4px;color:#8095a4;text-align:right;font:9px/1.3 "Segoe UI",Arial,sans-serif}
 .comparison-criterion{padding:8px 0;border-bottom:1px solid rgba(114,187,229,.1)}
 .comparison-criterion-top{display:flex;justify-content:space-between;gap:8px;color:#a9bac5;font:10px/1.4 "Segoe UI",Arial,sans-serif}

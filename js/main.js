@@ -1,6 +1,8 @@
 // NASA verisi data.js dosyasından SYSARR olarak yüklenir.
 window.loadPlanetSystems()
   .then(async SYSARR => {
+    // planet_data.js'ten gelen kısa dizileri okunaklı nesnelere çevir
+    // (h: ad, ly: ışık yılı, p: gezegenler, e: hangi değerin ölçüldüğü).
     const SYS = SYSARR.map(r => ({
       h: r[0],
       ra: r[1],
@@ -28,6 +30,7 @@ window.loadPlanetSystems()
       }))
     }));
 
+    // Puanlar Python'dan (/api/map-scores) alınır; harita kendi puanını hesaplamaz. Anahtar: 'yıldız|||gezegen'.
     const mapScoreMap = new Map();
     try {
       const response = await fetch("/api/map-scores");
@@ -43,6 +46,8 @@ window.loadPlanetSystems()
 
     // main.js dosyasındaki diğer kodlar burada devam edecek.
 
+// Haritadaki Güneş Sistemi kaydı (T: °C, g: m/s², R: km, a: AU).
+// ctx: yalnızca bağlam için gösterilen dev gezegenler, par: uydunun bağlı olduğu gezegen.
 const SOLAR = {
   h: 'Güneş Sistemi',
   ly: 0,
@@ -61,12 +66,17 @@ const SOLAR = {
     { n: 'Enceladus', k: 'Uydu (Satürn)', par: 'Satürn', T: -198, g: .11, R: 252 }
   ]
 };
+// Python'dan gelen puanı, kapsamı, sınıfı ve ölçüt satırlarını haritadaki gök cismine kopyalar.
+// API'ye ulaşılamazsa ölçütler 'veri yok' olarak gösterilir.
 function applyPythonScore(body, host) {
   const record = mapScoreMap.get(`${host.toLocaleLowerCase("tr-TR")}|||${body.n.toLocaleLowerCase("tr-TR")}`);
   const indicators = record?.indicators || [];
   body.score = record?.score ?? null;
+  body.scoreMin = record?.score_min ?? null;
   body.scoreMax = record?.score_max ?? null;
   body.coverage = record?.coverage ?? 0;
+  body.applicabilityNote = record?.applicability_note || null;
+  body.scoreStatus = record?.score_status || null;
   body.contested = !!record?.contested;
   body.planetClass = record?.planet_class?.label || "Sınıflandırılamadı";
   body.fluxEstimated = !!record?.flux_estimated;
@@ -92,25 +102,30 @@ SYS.forEach(s => s.p.forEach(b => {
 }));
 SOLAR.p.forEach(b => applyPythonScore(b, SOLAR.h));
 
+// Her sistemin en yüksek gezegen puanı (s.best) haritada ve bilgi panelinde gösterilir.
 const ALL = [SOLAR, ...SYS];
 ALL.forEach(s => {
   const v = s.p.filter(b => b.score != null).map(b => b.score);
   s.best = v.length ? Math.max(...v) : null;
 });
 
+// Puanı renge çevirir: 0 → kırmızı, 100 → yeşil (HSL renk tonu).
 const css = s => 'hsl(' + Math.round(s * 1.2) + ',70%,52%)';
+// Yıldız sıcaklığına (K) göre renk: soğuk yıldızlar kırmızı-turuncu, sıcaklar beyaz-mavi.
 const starCol = t => t == null ? 0xd8dcec :
   t < 3500 ? 0xff6a3d :
   t < 4500 ? 0xff9a4d :
   t < 5500 ? 0xffc46b :
   t < 6500 ? 0xfff0c0 : 0xcfe0ff;
 
+// Kısayollar: $ → getElementById, fmt → sayıyı Türkçe biçimde yaz.
 const $ = id => document.getElementById(id);
 const fmt = (x, d = 1) => x.toLocaleString('tr-TR', { maximumFractionDigits: d });
 
 const cv = document.createElement('canvas');
 document.body.prepend(cv);
 
+// Three.js temel kurulumu: çizici (renderer), sahne, kamera ve hafif ortam ışığı.
 const ren = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
 ren.setPixelRatio(Math.min(devicePixelRatio, 2));
 
@@ -121,6 +136,7 @@ scene.add(new THREE.AmbientLight(0xffffff, .14));
 const sp = [];
 const sc = [];
 
+// Arka plandaki dekoratif yıldız alanına bir nokta ekler (NASA verisi değil). v: birim yön vektörü, k: parlaklık.
 function addStar(v, k) {
   const t = Math.random();
   const m = k * (.55 + Math.random() * .45);
@@ -128,6 +144,8 @@ function addStar(v, k) {
   sp.push(v[0] * 400, v[1] * 400, v[2] * 400);
 }
 
+// 1.800 rastgele yıldız gökyüzüne eşit dağılır; ardından 5.000 yıldız eğik bir bant halinde
+// Samanyolu görüntüsü verir.
 for (let i = 0; i < 1800; i++) {
   const a = Math.random() * 6.283;
   const b = Math.acos(2 * Math.random() - 1);
@@ -165,12 +183,16 @@ const stars = new THREE.Points(
 );
 scene.add(stars);
 
+// Sahne grupları: mapG yıldız haritası, sysG sistem görünümü, cosmicG kozmik kaynak katmanı (başta gizli).
 const mapG = new THREE.Group();
 const sysG = new THREE.Group();
-scene.add(mapG, sysG);
+const cosmicG = new THREE.Group();
+cosmicG.visible = false;
+scene.add(mapG, sysG, cosmicG);
 
 const hitMat = new THREE.MeshBasicMaterial({ visible: false });
 
+// Parıltı dokusu: ortası parlak, kenarı saydam daire (canvas ile çizilir).
 const glowTex = (() => {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
@@ -186,6 +208,7 @@ const glowTex = (() => {
   return new THREE.CanvasTexture(c);
 })();
 
+// Verilen renk ve boyutta parıltı sprite'ı (her zaman kameraya bakan düz görüntü) oluşturur.
 const glow = (c, size) => {
   const p = new THREE.Sprite(new THREE.SpriteMaterial({
     map: glowTex,
@@ -198,6 +221,7 @@ const glow = (c, size) => {
   return p;
 };
 
+// Seçili nesnenin etrafında görünen halka.
 const sel = new THREE.Mesh(
   new THREE.RingGeometry(1, 1.05, 64),
   new THREE.MeshBasicMaterial({
@@ -212,6 +236,7 @@ scene.add(sel);
 
 const L = $('labels');
 
+// Ekrandaki HTML etiketini (yıldız/gezegen adı) oluşturur; konumu her karede layout() ile güncellenir.
 function mkLab(txt, cls) {
   const e = document.createElement('div');
   e.className = 'lb ' + (cls || '');
@@ -223,9 +248,13 @@ function mkLab(txt, cls) {
 // Yıldız haritasındaki mesafeler
 const maxLy = Math.max(...SYS.map(s => s.ly));
 const EXP = .75;
+// Uzaklık sıkıştırma: çizim uzaklığı = ışık yılı^0,75. Böylece 4 ve 8.000 ışık yılı uzaktaki
+// yıldızlar aynı ekrana sığar.
 const mr = ly => Math.pow(ly, EXP);
 const mapMax = mr(maxLy) * 4;
 
+// Gökyüzü koordinatlarını (RA: sağ açıklık, Dec: dik açıklık, derece) ve sıkıştırılmış uzaklığı
+// 3B konuma (x, y, z) çevirir: küresel → kartezyen koordinat.
 function dirPos(s) {
   const q = Math.PI / 180;
   const r = mr(s.ly);
@@ -239,6 +268,7 @@ function dirPos(s) {
 SOLAR.pos = new THREE.Vector3();
 SYS.forEach(s => s.pos = dirPos(s));
 
+// Güneş Sistemi'nin etrafındaki 'biz buradayız' halkası.
 const ringTex = (() => {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
@@ -260,7 +290,11 @@ const ringSprite = new THREE.Sprite(
 );
 ringSprite.scale.setScalar(20);
 
+// Harita durumu: etiketler, kozmik kaynaklar, görünen menzil (scope, ışık yılı) ve nokta katmanları.
 const mapLabs = [];
+const cosmicNodes = [];
+const cosmicHits = [];
+let cosmicEnabled = false;
 let scope = 200;
 let ptsA = null;
 let ptsF = null;
@@ -285,6 +319,7 @@ let sunHit = null;
   });
 }
 
+// Öne çıkan sistemlerin etiketleri yalnızca seçili menzilin içindeyse görünür.
 SYS.filter(s => s.f).forEach(s => {
   mapLabs.push({ el: mkLab(s.h), pos: s.pos, s, vis: () => s.ly <= scope });
 });
@@ -297,6 +332,53 @@ const selLab = {
 };
 mapLabs.push(selLab);
 
+// Kozmik kaynak katmanı (süpernova kalıntısı, pulsar, kara delik). Galaksi içindekiler uzaklığıyla,
+// çok uzak olanlar ('sky') yalnızca yön göstermek için sabit bir küre üzerine yerleştirilir. Puana katılmaz.
+const cosmicSources = (window.COSMIC_SOURCES || []).map(source => {
+  const plotLy = source.mapMode === 'sky' ? mr(maxLy) * 1.22 : mr(source.distanceLy);
+  const q = Math.PI / 180;
+  const pos = new THREE.Vector3(
+    plotLy * Math.cos(source.dec * q) * Math.cos(source.ra * q),
+    plotLy * Math.sin(source.dec * q),
+    -plotLy * Math.cos(source.dec * q) * Math.sin(source.ra * q)
+  );
+  const node = new THREE.Group();
+  node.position.copy(pos);
+  const color = new THREE.Color(source.color);
+  node.add(glow(color, 7));
+  const core = new THREE.Mesh(
+    new THREE.OctahedronGeometry(1.35, 0),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .98 })
+  );
+  node.add(core);
+  const halo = new THREE.Mesh(
+    new THREE.TorusGeometry(2.15, .13, 6, 28),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .7 })
+  );
+  halo.rotation.x = Math.PI / 2.7;
+  node.add(halo);
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(2.8, 8, 8), hitMat);
+  hit.userData.cosmicSource = source;
+  hit.userData.cosmicNode = node;
+  node.add(hit);
+  cosmicG.add(node);
+  cosmicHits.push(hit);
+  cosmicNodes.push({ source, node });
+
+  const label = mkLab('✦ ' + source.name, 'cosmic-label');
+  label.style.color = source.color;
+  label.style.textShadow = '0 0 8px ' + source.color + ', 0 0 3px #000';
+  mapLabs.push({
+    el: label,
+    pos,
+    vis: () => cosmicEnabled && (source.mapMode === 'sky' ? scope === maxLy : source.distanceLy <= scope)
+  });
+  source.pos = pos;
+  source.node = node;
+  return source;
+});
+
+// Yıldız noktaları için parıltı dokulu nokta malzemesi.
 const ptMat = size => new THREE.PointsMaterial({
   map: glowTex,
   vertexColors: true,
@@ -307,6 +389,8 @@ const ptMat = size => new THREE.PointsMaterial({
   blending: THREE.AdditiveBlending
 });
 
+// Verilen sistemleri tek bir nokta bulutu olarak çizer (binlerce yıldız için tek tek nesneden çok daha hızlı);
+// renk yıldız sıcaklığından gelir.
 function layer(list, size) {
   const pos = [];
   const col = [];
@@ -328,6 +412,8 @@ function layer(list, size) {
   return p;
 }
 
+// Haritada gösterilecek menzili (ışık yılı) değiştirir: menzil içindeki sistemleri yeniden çizer,
+// kamerayı uzaklaştırır ve ilgili düğmeyi işaretler. Öne çıkan sistemler (ptsF) daha büyük noktalarla çizilir.
 function setScope(R) {
   scope = R;
 
@@ -349,6 +435,7 @@ function setScope(R) {
 
 const selDummy = new THREE.Object3D();
 
+// Seçim halkasının takip edeceği nesne: Güneş için kendi grubu, diğer yıldızlar için o konuma konan boş nesne.
 const nodeObj = s => {
   if (s === SOLAR) return s.node;
   selDummy.position.copy(s.pos);
@@ -361,10 +448,12 @@ let sysLabs = [];
 let hitsS = [];
 let curS = null;
 
+// Gezegen yarıçapına (km) göre logaritmik görsel boyut.
 const size = R => R == null
   ? .7
   : Math.min(1.5, .25 + Math.log10(Math.max(R, 200) / 200) * .5);
 
+// Gezegen rengi sıcaklığa göre (sıcak → kızıl, soğuk → buz mavisi); Dünya her zaman mavi.
 const pcol = b => new THREE.Color(
   b.n == 'Dünya' ? 0x3b6ea8 :
   b.T == null ? 0x8a8678 :
@@ -374,6 +463,7 @@ const pcol = b => new THREE.Color(
   b.T > -150 ? 0x9fb0bd : 0xc9d3dc
 );
 
+// Gezegen etiketine adı ve puanı (puan rengiyle) yazar.
 function planetLab(b) {
   const e = mkLab(b.n);
   if (!b.ctx && b.score != null) {
@@ -382,6 +472,7 @@ function planetLab(b) {
   return e;
 }
 
+// Seçilen sistemi (ve varsa gezegeni) sistem görünümü sayfasında açar: system-view.html?host=...&planet=...
 function enterSystem(s, pl) {
   const url = new URL("system-view.html", window.location.href);
   url.searchParams.set("host", s.h);
@@ -393,6 +484,7 @@ function enterSystem(s, pl) {
   window.location.href = url.href;
 }
 
+// Gezegeni yaşam destek simülatöründe açan bağlantıyı üretir.
 function simulatorUrl(host, planet) {
   const url = new URL("workspace.html", window.location.href);
   url.searchParams.set("host", host);
@@ -401,12 +493,14 @@ function simulatorUrl(host, planet) {
   return url.href.replace(/&/g, "&amp;");
 }
 
+// Metindeki &, <, >, ", ' karakterlerini kaçışlar; dış veriden gelen adlar sayfada kod olarak çalışamaz (XSS önlemi).
 function escapeMarkup(value) {
   return String(value).replace(/[&<>"']/g, character => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
   })[character]);
 }
 
+// Harita görünümüne döner: sistem nesnelerini ve etiketlerini kaldırır, kamerayı ve paneli sıfırlar.
 function enterMap() {
   view = 'map';
   curS = null;
@@ -426,11 +520,13 @@ function enterMap() {
   $('back').style.display = 'none';
   $('scopes').style.display = 'flex';
   $('ttl').textContent = 'Yıldız haritası';
-  $('hint').textContent = 'Haritada ' + (SYS.length + 1) + ' yıldız sistemi (NASA verisi). Yönler gerçek; sistemler birbirinden ayrışsın diye mesafe hafif sıkıştırılmıştır, gerçek uzaklık üzerine gelince yazar. Sürükle: döndür. Sağ tık veya Shift+sürükle: kaydır. Tekerlek: imlece doğru yakınlaş. Tıkla: sistemi seç.';
+  $('hint').textContent = 'Haritada ' + (SYS.length + 1) + ' yıldız sistemi (NASA verisi). ✦ Kozmik kaynaklar katmanıyla yakın süpernova kalıntıları, pulsarlar ve kara delikleri aç; uzak kuasar/patlama işaretleri yalnızca yön gösterir. Yıldız uzaklıkları görsel olarak sıkıştırılmıştır. Sürükle: döndür. Sağ tık/Shift+sürükle: kaydır. Tekerlek: yakınlaş.';
   $('panel').style.display = 'none';
 }
 
 // Paneller
+// Haritada seçilen yıldız sisteminin bilgi panelini doldurur: uzaklık, yıldız sıcaklığı,
+// en yüksek puan ve gezegen listesi.
 function showNode(s) {
   selNode = s;
   selObj = nodeObj(s);
@@ -459,6 +555,28 @@ function showNode(s) {
     '<button class="go" data-go="1">Sistemi aç</button>';
 }
 
+// Seçilen kozmik kaynağın bilgi panelini doldurur (tür, uzaklık, konum, kaynak bağlantıları).
+function showCosmicSource(source) {
+  selNode = null;
+  selObj = source.node;
+  sel.visible = true;
+  $('panel').style.display = 'block';
+  const refs = (source.references || []).map(ref =>
+    '<a href="' + escapeMarkup(ref.url) + '" target="_blank" rel="noopener noreferrer">' + escapeMarkup(ref.label) + ' ↗</a>'
+  ).join('<br>');
+  const plotDescription = source.mapMode === 'sky'
+    ? 'İşaret, uzak kaynakların mesafesi aynı 3B ölçekte çizilemediği için yalnızca gökyüzü yönünü gösterir.'
+    : 'İşaret 3B haritada uzaklık verisiyle yerleştirilmiştir; haritanın yıldızlar için kullandığı görsel mesafe sıkıştırması burada da geçerlidir.';
+  $('pc').innerHTML =
+    '<h2>' + escapeMarkup(source.name) + '</h2><div class="sub">' + escapeMarkup(source.category) + '</div>' +
+    '<dl><dt>Dünya\'ya uzaklık</dt><dd>' + escapeMarkup(source.distanceLabel || 'ölçülmedi') + '</dd>' +
+    '<dt>Konum</dt><dd>RA ' + fmt(source.ra, 3) + '° · Dec ' + fmt(source.dec, 3) + '°</dd>' +
+    (source.redshift ? '<dt>Kırmızıya kayma</dt><dd>z ≈ ' + fmt(source.redshift, 3) + '</dd>' : '') + '</dl>' +
+    '<p class="note">' + escapeMarkup(source.note) + '</p><p class="note">' + plotDescription + '</p>' +
+    '<p class="source-references">' + refs + '</p>';
+}
+
+// Gezegen bilgi paneli: puan, kapsam, olası aralık, ölçüt çubukları ve temel değerler. b null ise paneli kapatır.
 function showPlanet(b) {
   const p = $('panel');
   selObj = b ? b.o.m : null;
@@ -474,8 +592,8 @@ function showPlanet(b) {
   $('pc').innerHTML =
     '<h2>' + b.n + '</h2><div class="sub">' + b.k + ' · ' + curS.h + '</div>' +
     (b.score == null
-      ? '<div id="score" style="color:#7f8aa6">—<small>bu senaryoda ölçüm yok</small></div>'
-      : '<div id="score" style="color:' + css(b.score) + '">' + b.score + ' <small>/ 100 · veri kapsamı %' + b.coverage + '</small>' + (b.scoreMax != null && b.scoreMax > b.score ? '<small class="score-range-note">Eksik ölçütler tam puan alsaydı teorik aralık: ' + b.score + '–' + b.scoreMax + '/100</small>' : '') + '</div>') +
+      ? '<div id="score" style="color:#7f8aa6">—<small>' + escapeMarkup(b.applicabilityNote || b.scoreStatus || 'bu senaryoda ölçüm yok') + '</small></div>'
+      : '<div id="score" style="color:' + css(b.score) + '">' + b.score + ' <small>bilinen ölçüt puanı /100 · kapsam %' + b.coverage + '</small>' + (b.scoreMin != null && b.scoreMax > b.scoreMin ? '<small class="score-range-note">Bilinmeyen ölçütlerle olası aralık: ' + b.scoreMin + '–' + b.scoreMax + '/100</small>' : '') + '</div>') +
     (b.contested ? '<p class="note">NASA arşivinde doğrulaması sorgulanmış olarak işaretli; bu sonucu ihtiyatla yorumla.</p>' : '') +
     (b.surfaceConcern
       ? '<p class="note">Sıcaklık, basınç, atmosfer veya boyut kubbe ve yaşam destek yükünü artırabilir; bu koşullar puanı tek başına 0’a indirmez.</p>'
@@ -489,9 +607,10 @@ function showPlanet(b) {
     '<dt>Yarıçap</dt><dd>' + b.parts[0][2] + '</dd><dt>Yıldıza gelen ışınım</dt><dd>' + b.parts[1][2] + '</dd>' +
     (b.a != null ? '<dt>Yıldıza uzaklık</dt><dd>' + fmt(b.a, 3) + ' AU</dd>' : '') +
     '<dt>Yıldız</dt><dd>' + curS.h + '</dd></dl>' +
-    '<p class="note">' + (b.fluxEstimated || b.tempEstimated ? 'Bazı ışınım/sıcaklık değerleri yıldız verilerinden tahmin edildi. ' : '') + 'Puan kubbe ve yaşam destek sistemleriyle telafi edilebilir zorlukları kademeli değerlendirir; tek bir zor koşul toplam puanı otomatik olarak 0 yapmaz. En az bir ölçülebilir kriter varsa kısmi puan hesaplanır; hiçbir kriterde veri yoksa skor gösterilmez. Ötegezegenlerde basınç ve atmosfer ölçümü çoğunlukla bulunmadığından bu puan tek başına yaşanabilirlik göstergesi değildir. Boyut sınıfı yalnızca yarıçap göstergesidir. Ötegezegen denge sıcaklığı ve Güneş Sistemi yüzey sıcaklığı doğrudan aynı ölçüm değildir.</p>';
+    '<p class="note">' + (b.fluxEstimated || b.tempEstimated ? 'Bazı ışınım/sıcaklık değerleri yıldız verilerinden tahmin edildi; bunlar varsayımsal modelde değerlendirilir. ' : '') + 'Doğrulanmış her ölçüt kendi senaryo ağırlığı kadar genel puana katkı yapar. Payda tüm senaryo ağırlıklarıdır; bu nedenle tek bir ölçütün puanı doğrudan genel puan olmaz. Eksik, tahmini veya türetilmiş değerler ölçüm puanına katılmaz. Ötegezegenlerde basınç ve atmosfer ölçümü çoğunlukla bulunmadığından puan tek başına yaşanabilirlik göstergesi değildir. Boyut sınıfı fiziksel sınıflandırma için tek başına yeterli olmayabilir. Ötegezegen denge sıcaklığı ve Güneş Sistemi yüzey sıcaklığı doğrudan aynı ölçüm değildir.</p>';
 }
 
+// Paneldeki gezegen adına veya 'Sistemi aç' düğmesine tıklanınca sistem görünümüne geçer.
 $('pc').addEventListener('click', e => {
   const pb = e.target.closest('[data-p]');
   const go = e.target.closest('[data-go]');
@@ -529,6 +648,7 @@ addEventListener('keydown', e => {
 });
 
 // Kamera ve seçim
+// Kamera durumu: th/ph kameranın açıları, D hedefe uzaklık, tgt bakılan nokta, flyTo yumuşak geçiş hedefi.
 let view = 'map';
 let flyTo = null;
 let flyD = 1;
@@ -548,6 +668,7 @@ const rgt = new THREE.Vector3();
 const upv = new THREE.Vector3();
 let mode = 'rot';
 
+// Kamerayı ekran düzleminde kaydırır (sağ tık veya Shift + sürükleme).
 function pan(dx, dy) {
   rgt.setFromMatrixColumn(cam.matrix, 0);
   upv.setFromMatrixColumn(cam.matrix, 1);
@@ -555,6 +676,7 @@ function pan(dx, dy) {
   tgt.addScaledVector(rgt, -dx * k).addScaledVector(upv, dy * k);
 }
 
+// Yakınlaştırır/uzaklaştırır; haritada fare imlecinin gösterdiği noktaya doğru yaklaşır. Uzaklık sınırlar içinde tutulur.
 function zoomBy(f, cx, cy) {
   if (view == 'map' && cx != null) {
     const r = cv.getBoundingClientRect();
@@ -565,6 +687,7 @@ function zoomBy(f, cx, cy) {
   D = Math.min(view == 'map' ? mapMax : 160, Math.max(view == 'map' ? .25 : 8, D * f));
 }
 
+// Fare bir nesnenin üzerindeyken küçük bir ipucu (ad, uzaklık, puan) gösterir.
 function hover(e) {
   if (e.pointerType != 'mouse') return;
   const h = pick(e);
@@ -574,7 +697,9 @@ function hover(e) {
     t.style.display = 'block';
     t.style.left = e.clientX + 14 + 'px';
     t.style.top = e.clientY + 14 + 'px';
-    t.textContent = h.s
+    t.textContent = h.source
+      ? h.source.name + ' · ' + h.source.category + ' · tıkla: ayrıntılar'
+      : h.s
       ? h.s.h + ' · ' + (h.s.ly ? fmt(h.s.ly) + ' ışık yılı · ' : '') +
         h.s.p.filter(b => !b.ctx && !b.par).length + ' gezegen' +
         (h.s.best == null ? '' : ' · skor ' + h.s.best)
@@ -588,6 +713,7 @@ function hover(e) {
 
 cv.addEventListener('contextmenu', e => e.preventDefault());
 
+// Fare/dokunma olayları: sürükleyince döndür veya kaydır, iki parmakla yakınlaştır.
 cv.addEventListener('pointerdown', e => {
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   moved = 0;
@@ -636,6 +762,8 @@ cv.addEventListener('pointermove', e => {
   }
 });
 
+// Parmak/fare bırakıldığında: hareket çok azsa bu bir tıklamadır. Haritada tek tık bilgi panelini açar,
+// çift tık sisteme doğru uçar; sistem görünümünde gezegeni seçer.
 const endPtr = e => {
   const single = ptrs.size == 1;
   ptrs.delete(e.pointerId);
@@ -645,6 +773,13 @@ const endPtr = e => {
 
     if (view == 'map') {
       if (h) {
+        if (h.source) {
+          showCosmicSource(h.source);
+          flyTo = h.source.pos.clone();
+          flyD = Math.min(D, Math.max(1.2, mr(h.source.distanceLy || maxLy) * .12));
+          lastMapClick = { s: null, t: 0 };
+          return;
+        }
         const now = performance.now();
         const dbl = lastMapClick.s === h.s && now - lastMapClick.t < 350;
 
@@ -673,6 +808,7 @@ const endPtr = e => {
 cv.addEventListener('pointerup', endPtr);
 cv.addEventListener('pointercancel', endPtr);
 
+// Fare tekerleğiyle yakınlaştırma.
 cv.addEventListener('wheel', e => {
   e.preventDefault();
   flyTo = null;
@@ -682,6 +818,8 @@ cv.addEventListener('wheel', e => {
 const rc = new THREE.Raycaster();
 const mv = new THREE.Vector2();
 
+// Tıklanan/üzerine gelinen nesneyi bulur: ekran koordinatını Three.js Raycaster ile 3B ışına çevirip
+// kesişimlere bakar. Haritada önce kozmik kaynaklar, sonra en yakın yıldız noktası; sistemde gezegenler.
 function pick(e) {
   const r = cv.getBoundingClientRect();
   mv.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
@@ -689,6 +827,10 @@ function pick(e) {
 
   if (view == 'map') {
     rc.params.Points.threshold = Math.max(.4, D * .012);
+    if (cosmicEnabled) {
+      const sourceHit = rc.intersectObjects(cosmicHits)[0];
+      if (sourceHit) return { source: sourceHit.object.userData.cosmicSource };
+    }
     const hs = rc.intersectObjects([ptsA, ptsF, sunHit])
       .map(h => ({
         d: h.distanceToRay == null ? 0 : h.distanceToRay / Math.max(1, h.distance),
@@ -705,6 +847,7 @@ function pick(e) {
   return h ? h.object.userData : null;
 }
 
+// Pencere boyutu değişince çiziciyi ve kameranın en-boy oranını günceller.
 function resize() {
   const w = innerWidth;
   const h = innerHeight;
@@ -716,7 +859,21 @@ function resize() {
 addEventListener('resize', resize);
 
 document.querySelectorAll('.sc').forEach(b => {
+  // Menzil düğmeleri haritada gösterilen uzaklık sınırını değiştirir.
   b.onclick = () => setScope(Math.min(+b.dataset.r, maxLy));
+});
+
+// Kozmik kaynak katmanını açar/kapatır; açılınca menzil en az 1.000 ışık yılına genişler.
+$('cosmicToggle').addEventListener('click', () => {
+  cosmicEnabled = !cosmicEnabled;
+  cosmicG.visible = cosmicEnabled;
+  $('cosmicToggle').setAttribute('aria-pressed', String(cosmicEnabled));
+  if (cosmicEnabled && scope < 1000) setScope(Math.min(1000, maxLy));
+  if (!cosmicEnabled && selObj && cosmicNodes.some(item => item.node === selObj)) {
+    selObj = null;
+    sel.visible = false;
+    $('panel').style.display = 'none';
+  }
 });
 
 resize();
@@ -727,6 +884,8 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const tmp = new THREE.Vector3();
 const placed = [];
 
+// Etiketleri ekrana yerleştirir: 3B konumu ekran koordinatına çevirir, seçili ve yakın olanlara
+// öncelik verir, üst üste binen etiketleri gizler.
 function layout(labs) {
   placed.length = 0;
   labs.forEach(l => {
@@ -760,6 +919,7 @@ function layout(labs) {
     });
 }
 
+// Pusula: gökyüzünün kuzey/güney/doğu/batı yönlerinin kamera açısına göre ekranda nerede olduğunu gösterir.
 const compassAxes = {
   north: new THREE.Vector3(0, 1, 0),
   south: new THREE.Vector3(0, -1, 0),
@@ -767,6 +927,7 @@ const compassAxes = {
   west: new THREE.Vector3(0, 0, 1)
 };
 
+// Yön vektörlerini kameranın tersine döndürüp pusuladaki harf ve çizgilerin konumunu günceller.
 function updateCompass() {
   const inverseCamera = cam.quaternion.clone().invert();
   Object.entries(compassAxes).forEach(([direction, axis]) => {
@@ -791,6 +952,8 @@ function updateCompass() {
   });
 }
 
+// Animasyon döngüsü (her karede): sistem görünümünde gezegen ve uyduları döndür, yumuşak kamera geçişi yap,
+// kamerayı küresel koordinatlarla konumlandır, seçim halkasını ve etiketleri güncelle, sahneyi çiz.
 (function loop() {
   const t = still ? 0 : clock.getElapsedTime();
 
@@ -842,6 +1005,7 @@ function updateCompass() {
 
   if (view == 'map') {
     SOLAR.node.scale.setScalar(cam.position.distanceTo(SOLAR.node.position) * .0045);
+    cosmicNodes.forEach(item => item.node.scale.setScalar(cam.position.distanceTo(item.node.position) * .0045));
   }
 
   layout(view == 'map' ? mapLabs : sysLabs);
