@@ -1,10 +1,6 @@
 """Planet composition and surface-colonization feasibility classification."""
 
-
-# Kural tabanlı sınıflandırma; yukarıdan aşağı ilk uyan sınıf döner:
-# veri yok → sınıflandırılamadı; R ≥ 2,5 veya M ≥ 15 → gaz/buz devi (yüzey ve yer altı puanı verilmez);
-# ölçülmüş yüzey ≥ 800 K → aşırı sıcak; R > 1,6 veya M > 5 → süper-Dünya/mini-Neptün (%15 ihtiyat payı);
-# diğer → kayalık aday.
+#sınıf,uygulanabilirlik,ceza katsayısı döndürü.
 def classify_planet(radius_earth, mass_earth, density_earth=None, temperature_k=None):
     """Classify planet and determine whether surface/underground scenarios apply."""
     if radius_earth is None and mass_earth is None:
@@ -59,9 +55,7 @@ def classify_planet(radius_earth, mass_earth, density_earth=None, temperature_k=
         "reason": "Boyut ve kütle parametreleri katı kabuklu karasal gezegen/uydu modeliyle uyumludur.",
     }
 
-
-# Sınıflandırmadan önce kaynakları süzer: yalnızca NASA/proje kaynaklı yarıçap ve kütle,
-# yalnızca ölçülmüş yüzey sıcaklığı kullanılır. Tahmini bir kütleyle gezegeni 'gaz devi' ilan etmemek için.
+#yanlızca doğrulanmıs verilerle yukardaki fonk çağırır
 def classify_metrics(metrics):
     """Classify using available properties, never treating equilibrium heat as surface heat."""
     provenance = metrics.get("provenance", {})

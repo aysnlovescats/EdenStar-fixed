@@ -4,9 +4,7 @@ import math
 from .phl_catalog import normalize_planet_name
 from .scoring import score_scenario
 
-
-# Değerlere sıra numarası verir (en küçük 1). Eşit değerler sıralarının ortalamasını alır:
-# [10, 20, 20, 30] → [1; 2,5; 2,5; 4].
+#degerleri sıralar, eşit değerler kendi pozisyonlarının ortalamasını paylaşır.
 def _average_ranks(values):
     """Rank values from 1..n; tied values share the mean of their positions."""
     order = sorted(range(len(values)), key=lambda index: values[index])
@@ -23,8 +21,6 @@ def _average_ranks(values):
     return ranks
 
 
-# Spearman sıra korelasyonu: iki listeyi sıralara çevirip sıralar arasında Pearson korelasyonu hesaplar.
-# Sonuç −1 ile 1 arası: 1 aynı sıralama, 0 ilişki yok, −1 ters sıralama. Hesaplanamıyorsa None.
 def spearman(xs, ys):
     """Spearman rank correlation (Pearson on average ranks); None when undefined."""
     if len(xs) != len(ys) or len(xs) < 3:
@@ -38,8 +34,7 @@ def spearman(xs, ys):
         return None
     return covariance / (spread_x * spread_y)
 
-
-# PHL'de ESI'si olan ve seçilen senaryoda en az bir doğrulanmış ölçütü olan (kapsam > 0) gezegenleri puanlarıyla eşleştirir.
+#esı sı olan gezegenleri, her biri için senaryo puanıyla eşleştirir; 0% kapsamlı gezegenler atlanır.
 def esi_score_pairs(planets, catalog, scenario_id):
     """Pair each NASA planet that has an ESI with its scenario score.
 
@@ -61,8 +56,7 @@ def esi_score_pairs(planets, catalog, scenario_id):
         })
     return pairs
 
-
-# Eşleşen noktaları, nokta sayısını ve ESI ile puan arasındaki Spearman ρ değerini döndürür.
+#hesaplama yaparak PHL ESI ile proje senaryosu puanları arasındaki tutarlılığı döndürür; eşleşen gezegen sayısı ve Spearman korelasyon katsayısı dahil.
 def esi_consistency(planets, catalog, scenario_id):
     pairs = esi_score_pairs(planets, catalog, scenario_id)
     rho = spearman([item["esi"] for item in pairs], [item["score"] for item in pairs])

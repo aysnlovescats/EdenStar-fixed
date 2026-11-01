@@ -8,9 +8,7 @@ KNOWN_DISTANCES_PC = {
     "kepler-452": 551.7,
 }
 
-
-# Güvenli sayı dönüşümü: boş metin, sayı olmayan metin, NaN ve sonsuz değerler None olur.
-# Böylece bozuk bir hücre programı çökertmez, o ölçüt 'veri yok' görünür.
+#boş ve geçersiz değerleri None olarak döndürür; sonsuzluk ve NaN'yi de None yapar.
 def number(value):
     if value is None or str(value).strip() == "":
         return None
@@ -20,9 +18,7 @@ def number(value):
         return None
     return result if math.isfinite(result) else None
 
-
-# Yıldızın tayf sınıfını (O, B, A, F, G, K, M) döndürür. Katalogda yoksa yıldız sıcaklığından
-# kaba sınıf çıkarır ve 'estimated' (tahmin) olarak işaretler.
+# gezegenin yıldız tayf sınıfını döndürür; yoksa yüzey sıcaklığından yaklaşık bir sınıf tahmini yapar.
 def stellar_type(row):
     """Return the catalog spectral class, or a rough class inferred from Teff."""
     catalog_type = str(row.get("st_spectype") or "").strip().upper()
@@ -48,9 +44,7 @@ def stellar_type(row):
         letter = "M"
     return f"{letter} (sıcaklıktan yaklaşık)", letter, "estimated"
 
-
-# Kütlenin türünü belirler: pl_bmassprov='Mass' → gerçek kütle (archive); 'Msini' → yalnızca alt sınır (estimated);
-# boş → doğrulanamadı (unknown). Yerçekimi, yoğunluk, kaçış hızı ve Hill hesabı yalnızca gerçek kütleyi kullanır.
+#kütle ve yarıçapın tahmini mi yoksa arşivden mi geldiğini ayırt eder; Msini alt sınırları ölçüm olarak sayılmaz.
 def mass_provenance(row, mass, estimated):
     """Distinguish a true reported mass from NASA's projected-mass alternatives."""
     if mass is None:
@@ -74,11 +68,9 @@ def mass_provenance(row, mass, estimated):
 
 # Project prior for the exploratory model, not an observed planet property.
 # K stars are given a modest advantage for their long, relatively steady main-sequence lives.
-# Varsayımsal modelde kullanılan yıldız sınıfı katsayıları (proje varsayımı, olasılık değil).
 STELLAR_PRIORS = {"O": 0.25, "B": 0.35, "A": 0.45, "F": 0.60, "G": 0.75, "K": 0.85, "M": 0.65}
 
 
-# Yarıçaptan kütle tahmini (Chen & Kipping 2017 ampirik bağıntısı). Sonuç her zaman 'tahmin' olarak işaretlenir.
 def estimate_mass_from_radius(r):
     """Chen & Kipping (2017) empirical Mass-Radius relation."""
     if r is None or r <= 0:
@@ -90,7 +82,6 @@ def estimate_mass_from_radius(r):
     return 317.8  # Jüpiter ölçeği
 
 
-# Aynı bağıntının tersi: kütleden yarıçap tahmini.
 def estimate_radius_from_mass(m):
     """Chen & Kipping (2017) inverse empirical Radius-Mass relation."""
     if m is None or m <= 0:
@@ -101,9 +92,7 @@ def estimate_radius_from_mass(m):
         return 0.808 * (m ** 0.589)
     return 17.74 * (m ** -0.044)
 
-
-# Yıldız enerjisini (akı, Dünya = 1) bulur. Sıra: 1) NASA'nın pl_insol değeri, 2) S = L / a²,
-# 3) L yoksa S = R² · (T / 5772)⁴ / a² (Stefan–Boltzmann). İkinci dönen değer akının hesaplanıp hesaplanmadığını söyler.
+# NASA CSV'sinde pl_insol değeri yoksa, yörünge ve yıldız verilerinden yaklaşık bir değer türetir.
 def calculate_insolation(row):
     """Earth-normalized flux and whether it was derived rather than archived."""
     flux = number(row.get("pl_insol"))
@@ -117,9 +106,7 @@ def calculate_insolation(row):
         return (radius ** 2) * ((temp / 5772.0) ** 4) / (au ** 2), True
     return None, False
 
-
-# Tek bir NASA satırından bütün ölçüm sözlüğünü üretir ve her değerin kaynağını (provenance) yazar.
-# Tüm büyüklükler Dünya = 1 birimindedir. Dönüş: (ölçümler, akı tahmini mi, sıcaklık tahmini mi).
+#ölçüm sözlüğünü ve her biri için provenance üretir.
 def derive_planet_metrics(row):
     radius = number(row.get("pl_rade"))
     mass = number(row.get("pl_bmasse"))
@@ -137,8 +124,6 @@ def derive_planet_metrics(row):
     temperature = number(row.get("pl_eqt"))
     temp_estimated = False
     if temperature is None and flux is not None and flux > 0:
-        # Denge sıcaklığı yoksa akıdan tahmin: T = 278,5 · S^0,25. 278,5 K, ışığı hiç yansıtmayan (albedo = 0)
-        # bir cismin Dünya uzaklığındaki sıcaklığıdır; Dünya'nın albedosuyla 255 K olurdu. Bu değer ana puana girmez.
         temperature = 278.5 * (flux ** 0.25)
         temp_estimated = True
     # pl_eqt and the flux-derived fallback are equilibrium estimates, not surface measurements.
@@ -155,7 +140,6 @@ def derive_planet_metrics(row):
     spectral_label, spectral_class, spectral_source = stellar_type(row)
     star_prior = STELLAR_PRIORS.get(spectral_class)
 
-    # Dünya birimlerinde: yerçekimi g = M / R², yoğunluk ρ = M / R³ (Dünya için ikisi de 1).
     gravity = (mass / (radius ** 2)) if (mass and radius and radius > 0) else None
     density = (mass / (radius ** 3)) if (mass and radius and radius > 0) else None
     escape_vel = math.sqrt(mass / radius) if (mass and radius and radius > 0) else None
@@ -164,12 +148,9 @@ def derive_planet_metrics(row):
     physical_mass = mass is not None and mass_provenance(row, mass, mass_estimated) and mass_provenance(row, mass, mass_estimated)["kind"] == "archive"
     measured_radius = number(row.get("pl_rade"))
     density_measured = mass / measured_radius ** 3 if physical_mass and measured_radius and measured_radius > 0 else None
-    # Kaçış hızı v = 11,19 · √(M / R) km/s (Dünya'nınki 11,19 km/s). Yalnızca gerçek kütle ve ölçülmüş yarıçapla.
     escape_measured = 11.19 * math.sqrt(mass / measured_radius) if physical_mass and measured_radius and measured_radius > 0 else None
     hill_window = None
     if physical_mass and measured_radius and measured_radius > 0 and semi_major_axis and semi_major_axis > 0 and stellar_mass and stellar_mass > 0:
-        # Hill yarıçapı r = a · (M / 3M*)^(1/3); 332.946 = Güneş kütlesinin Dünya kütlesi cinsinden değeri.
-        # Kararlı yörünge penceresi = 0,49 · r_Hill / gezegen yarıçapı (prograde yörüngeler için kabul).
         hill_radius_au = semi_major_axis * (mass / (3 * stellar_mass * 332946.0)) ** (1 / 3)
         planet_radius_au = measured_radius * 6371.0 / 149597870.7
         hill_window = 0.49 * hill_radius_au / planet_radius_au
@@ -179,8 +160,6 @@ def derive_planet_metrics(row):
     radiation = None
     geothermal = None
 
-    # Her ölçümün kaynağı: archive (NASA), derived (formülle), estimated (tahmin).
-    # scoring.py hangisinin puana gireceğine buna bakarak karar verir.
     provenance = {
         "radius": (
             {"kind": "estimated", "label": "Yarıçap, kütle-yarıçap bağıntısından tahmin edildi"}
